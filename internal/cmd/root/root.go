@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"golang.org/x/term"
 
 	"github.com/ankitpokhrel/jira-cli/internal/cmd/board"
 	"github.com/ankitpokhrel/jira-cli/internal/cmd/completion"
@@ -79,6 +80,14 @@ func NewCmdRoot() *cobra.Command {
 			return cmd.Help()
 		},
 		PersistentPreRun: func(cmd *cobra.Command, _ []string) {
+			// In non-interactive mode, replace TTY stdin with /dev/null
+			// so write commands never block waiting for input.
+			if !viper.GetBool("interactive") && term.IsTerminal(int(os.Stdin.Fd())) {
+				if devNull, err := os.Open(os.DevNull); err == nil {
+					os.Stdin = devNull
+				}
+			}
+
 			subCmd := cmd.Name()
 			if !cmdRequireToken(subCmd) {
 				return
