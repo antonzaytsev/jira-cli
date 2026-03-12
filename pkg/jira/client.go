@@ -224,6 +224,11 @@ func (c *Client) PostV1(ctx context.Context, path string, body []byte, headers H
 	return c.request(ctx, http.MethodPost, c.server+baseURLv1+path, body, headers)
 }
 
+// PostMultipart sends a multipart POST request to v3 version of the jira api.
+func (c *Client) PostMultipart(ctx context.Context, path string, body []byte, headers Header) (*http.Response, error) {
+	return c.request(ctx, http.MethodPost, c.server+baseURLv3+path, body, headers)
+}
+
 // Put sends PUT request to v3 version of the jira api.
 func (c *Client) Put(ctx context.Context, path string, body []byte, headers Header) (*http.Response, error) {
 	return c.request(ctx, http.MethodPut, c.server+baseURLv3+path, body, headers)
