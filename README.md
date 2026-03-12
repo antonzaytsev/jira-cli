@@ -63,12 +63,9 @@ brew uninstall jira-cli
 
 Download and install this fork:
 ```sh
-VERSION=$(curl -sI https://github.com/antonzaytsev/jira-cli/releases/latest | grep -i '^location:' | sed 's|.*/v||;s/[[:space:]]//g')
-ARCH=arm64 # use x86_64 for Intel Macs
-curl -sL "https://github.com/antonzaytsev/jira-cli/releases/download/v${VERSION}/jira_${VERSION}_macOS_${ARCH}.tar.gz" | tar -xz -C /tmp
-sudo mv "/tmp/jira_${VERSION}_macOS_${ARCH}/bin/jira" /usr/local/bin/jira
-rm -rf "/tmp/jira_${VERSION}_macOS_${ARCH}"
+curl -sL https://raw.githubusercontent.com/antonzaytsev/jira-cli/main/install.sh | sh
 ```
+The binary is installed to `~/.local/bin`. Make sure it's in your `PATH` (the script will remind you if not).
 
 **Step 2 — Get a Jira API token**
 
@@ -90,7 +87,9 @@ jira issue list
 
 ### Updating
 
-Run the same install commands from Step 1 above.
+```sh
+curl -sL https://raw.githubusercontent.com/antonzaytsev/jira-cli/main/install.sh | sh
+```
 
 ---
 
