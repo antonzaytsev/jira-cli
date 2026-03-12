@@ -301,7 +301,14 @@ func (c *Client) request(ctx context.Context, method, endpoint string, body []by
 }
 
 func dump(req *http.Request, res *http.Response) {
+	authHeader := req.Header.Get("Authorization")
+	if authHeader != "" {
+		req.Header.Set("Authorization", "***REDACTED***")
+	}
 	reqDump, _ := httputil.DumpRequest(req, true)
+	if authHeader != "" {
+		req.Header.Set("Authorization", authHeader)
+	}
 	prettyPrintDump("Request Details", reqDump)
 
 	if res != nil {
