@@ -50,101 +50,76 @@
    </p>
 </div>
 
+This is a fork of [ankitpokhrel/jira-cli](https://github.com/ankitpokhrel/jira-cli) with additional features for AI-agent workflows.
+
+## Quick setup (macOS)
+
+**Step 1 — Install the binary**
+
+If you have the original `jira-cli` installed via Homebrew, remove it first:
+```sh
+brew uninstall jira-cli
+```
+
+Download and install this fork:
+```sh
+curl -sL https://github.com/antonzaytsev/jira-cli/releases/latest/download/jira_macOS_arm64.tar.gz | tar -xz
+sudo mv bin/jira /usr/local/bin/jira
+rm -rf bin/
+```
+For Intel Macs, replace `arm64` with `x86_64`.
+
+**Step 2 — Get a Jira API token**
+
+Generate a token at https://id.atlassian.com/manage-profile/security/api-tokens and add it to your shell config (`~/.zshrc`):
+```sh
+export JIRA_API_TOKEN="your-token-here"
+```
+
+**Step 3 — Initialize the CLI**
+```sh
+jira init
+```
+Select `Cloud` as the installation type and provide your Jira server URL and login email when prompted.
+
+**Step 4 — Verify**
+```sh
+jira issue list
+```
+
+### Updating
+
+```sh
+curl -sL https://github.com/antonzaytsev/jira-cli/releases/latest/download/jira_macOS_arm64.tar.gz | tar -xz
+sudo mv bin/jira /usr/local/bin/jira
+rm -rf bin/
+```
+
+---
+
 JiraCLI is an interactive command line tool for Atlassian Jira that will help you avoid Jira UI to some extent. This
 tool may not be able to do everything, but it has all the essential features required to improve your day-to-day workflow with Jira.
 
-The tool started with the idea of making issue search and navigation as straightforward as possible. However, with the
-help of [outstanding supporters like you](#support-the-project), we evolved, and the tool now includes all necessary
-features like issue creation, cloning, linking, ticket transition, and much more.
-
 > This tool is heavily inspired by the [GitHub CLI](https://github.com/cli/cli)
 
-## Supported platforms
-> [!NOTE]
-> Some features might work slightly differently in cloud installation versus on-premise installation due to the
-nature of the data. Yet, we've attempted to make the experience as similar as possible.
+## Other installation methods
 
-| Platform | <a href="#"><img alt="Linux" src="https://img.shields.io/badge/Linux-%E2%9C%93-dark--green?logo=linux&logoColor=white&style=flat-square" /></a><a href="#"><img alt="macOS" src="https://img.shields.io/badge/macOS-%E2%9C%93-dark--green?logo=apple&style=flat-square" /></a><a href="#"><img alt="FreeBSD" src="https://img.shields.io/badge/FreeBSD-%E2%9C%93-dark--green?logo=freebsd&style=flat-square" /></a><a href="#"><img alt="NetBSD" src="https://img.shields.io/badge/NetBSD-%E2%9C%93-dark--green?logo=netbsd&logoColor=white&style=flat-square" /></a><a href="#"><img alt="Windows" src="https://img.shields.io/badge/Windows-partial-yellow?logo=windows&style=flat-square" /></a> |
-| :------------- | :----------: |
-| **Jira**  | <a href="#"><img alt="Jira Cloud" src="https://img.shields.io/badge/Jira Cloud-%E2%9C%93-dark--green?logo=jira&style=flat-square" /></a><a href="#"><img alt="Jira Server" src="https://img.shields.io/badge/Jira Server-%E2%9C%93-dark--green?logo=jira&style=flat-square" /></a> |
-
-## Installation
-`jira-cli` is available as a downloadable packaged binary for Linux, macOS, and Windows from the [releases page](https://github.com/ankitpokhrel/jira-cli/releases).
-
-You can use Docker to quickly try out `jira-cli`.
+`jira-cli` is also available from the upstream [releases page](https://github.com/ankitpokhrel/jira-cli/releases), via `Homebrew`, `Nix`, or Docker:
 
 ```sh
 docker run -it --rm ghcr.io/ankitpokhrel/jira-cli:latest
 ```
 
-Follow the [installation guide](https://github.com/ankitpokhrel/jira-cli/wiki/Installation) for other installation methods like `Homebrew`, `Nix`, etc.
+See the upstream [installation guide](https://github.com/ankitpokhrel/jira-cli/wiki/Installation) for details.
 
-### Install from this fork on macOS (replacing Homebrew version)
-
-1. Uninstall the Homebrew version:
-   ```sh
-   brew uninstall jira-cli
-   ```
-
-2. Download and install the latest release:
-   ```sh
-   curl -sL https://github.com/antonzaytsev/jira-cli/releases/latest/download/jira_macOS_arm64.tar.gz | tar -xz
-   sudo mv bin/jira /usr/local/bin/jira
-   rm -rf bin/
-   ```
-   For Intel Macs, replace `arm64` with `x86_64`.
-
-3. Verify the installation:
-   ```sh
-   jira version
-   ```
-
-<a href="https://repology.org/project/jira-cli-go/versions">
-    <img src="https://repology.org/badge/vertical-allrepos/jira-cli-go.svg" alt="Packaging status">
-</a>
-
-## Getting started
-
-#### Cloud server
-
-1. [Get a Jira API token](https://id.atlassian.com/manage-profile/security/api-tokens) and export it to your shell as
-   a `JIRA_API_TOKEN` variable. Add it to your shell configuration file, for instance, `$HOME/.bashrc`, so that the
-   variable is always available. Alternatively, you can also use `.netrc` file or `keychain` to set the token. Learn
-   more [here](https://github.com/ankitpokhrel/jira-cli/discussions/356).
-2. Run `jira init`, select installation type as `Cloud`, and provide required details to generate a config file required
-   for the tool.
-
-#### On-premise installation
-
-1. Export required environment variables:
-   - If you are using basic auth, export the `password` you use to login to Jira as a `JIRA_API_TOKEN` variable.
-   - If you are using personal access token (PAT), get the `token` from your jira profile and export it as
-     a `JIRA_API_TOKEN` variable. In addition to this, set `JIRA_AUTH_TYPE` env to `bearer`.
-   - Add these ENVs to your shell configuration file, for instance, `$HOME/.bashrc`, so that they are always available.
-   - Alternatively, you can also use `.netrc` file or `keychain` to set the token. Learn
-     more [here](https://github.com/ankitpokhrel/jira-cli/discussions/356).
-2. Run `jira init`, select installation type as `Local`, and provide the required details to generate a config file required
-   for the tool.
-   - The most common auth type for on-premise installation is `basic`. If you are using your jira login credentials
-     (username and password), select the `basic` auth type.
-   - If you want to use `mtls` (client certificates), select auth type `mtls` and provide the CA Cert, client Key, and client cert.
-
-> [!IMPORTANT]
-> If your on-premise Jira installation is using a language other than `English`, then the issue/epic creation
-   may not work because the older version of Jira API doesn't return the untranslated name for `issuetypes`. In that case,
-   you will have to fill in `epic.name`, `epic.link` and `issue.types.*.handle` fields manually in the generated config
-   to get the expected behavior.
-
-See [FAQs](https://github.com/ankitpokhrel/jira-cli/discussions/categories/faqs) for frequently asked questions.
+## Configuration
 
 #### Authentication types
 
-The tool supports `basic`, `bearer` (Personal Access Token), and `mtls` (Client Certificates) authentication types. Basic auth is used by
-default.
+The tool supports `basic`, `bearer` (Personal Access Token), and `mtls` (Client Certificates) authentication types. Basic auth is used by default.
 
-* If you want to use PAT, you need to set `JIRA_AUTH_TYPE` as `bearer`.
-* If you want to use `mtls` run `jira init`. Select installation type `Local`, and then select authentication type as `mtls`.
-  * In case `JIRA_API_TOKEN` variable is set it will be used together with `mtls`.
+* For PAT, set `JIRA_AUTH_TYPE=bearer` in your shell config.
+* For `mtls`, run `jira init`, select `Local`, then `mtls`, and provide the CA Cert, client Key, and client Cert.
 
 #### Shell completion
 Check `jira completion --help` for more info on setting up a bash/zsh shell completion.
