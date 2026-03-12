@@ -63,7 +63,8 @@ brew uninstall jira-cli
 
 Download and install this fork:
 ```sh
-curl -sL https://github.com/antonzaytsev/jira-cli/releases/latest/download/jira_macOS_arm64.tar.gz | tar -xz
+VERSION=$(curl -sI https://github.com/antonzaytsev/jira-cli/releases/latest | grep -i '^location:' | sed 's|.*/v||;s/[[:space:]]//g')
+curl -sL "https://github.com/antonzaytsev/jira-cli/releases/download/v${VERSION}/jira_${VERSION}_macOS_arm64.tar.gz" | tar -xz
 sudo mv bin/jira /usr/local/bin/jira
 rm -rf bin/
 ```
@@ -90,7 +91,8 @@ jira issue list
 ### Updating
 
 ```sh
-curl -sL https://github.com/antonzaytsev/jira-cli/releases/latest/download/jira_macOS_arm64.tar.gz | tar -xz
+VERSION=$(curl -sI https://github.com/antonzaytsev/jira-cli/releases/latest | grep -i '^location:' | sed 's|.*/v||;s/[[:space:]]//g')
+curl -sL "https://github.com/antonzaytsev/jira-cli/releases/download/v${VERSION}/jira_${VERSION}_macOS_arm64.tar.gz" | tar -xz
 sudo mv bin/jira /usr/local/bin/jira
 rm -rf bin/
 ```
