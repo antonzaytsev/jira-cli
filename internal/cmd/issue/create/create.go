@@ -123,6 +123,7 @@ func create(cmd *cobra.Command, _ []string) {
 			AffectsVersions:  params.AffectsVersions,
 			OriginalEstimate: params.OriginalEstimate,
 			CustomFields:     params.CustomFields,
+			CustomFieldsJSON: params.CustomFieldsJSON,
 			EpicField:        viper.GetString("epic.link"),
 		}
 		cr.ForProjectType(projectType)
@@ -370,6 +371,17 @@ func parseFlags(flags query.FlagParser) *cmdcommon.CreateParams {
 	custom, err := flags.GetStringToString("custom")
 	cmdutil.ExitIfError(err)
 
+	customJSON, err := flags.GetStringToString("custom-json")
+	cmdutil.ExitIfError(err)
+
+	var customFieldsJSON map[string]json.RawMessage
+	if len(customJSON) > 0 {
+		customFieldsJSON = make(map[string]json.RawMessage)
+		for k, v := range customJSON {
+			customFieldsJSON[k] = json.RawMessage(v)
+		}
+	}
+
 	template, err := flags.GetString("template")
 	cmdutil.ExitIfError(err)
 
@@ -393,6 +405,7 @@ func parseFlags(flags query.FlagParser) *cmdcommon.CreateParams {
 		AffectsVersions:  affectsVersions,
 		OriginalEstimate: originalEstimate,
 		CustomFields:     custom,
+		CustomFieldsJSON: customFieldsJSON,
 		Template:         template,
 		NoInput:          noInput,
 		Debug:            debug,

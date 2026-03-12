@@ -1,6 +1,7 @@
 package cmdcommon
 
 import (
+	"encoding/json"
 	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -37,6 +38,7 @@ type CreateParams struct {
 	AffectsVersions  []string
 	OriginalEstimate string
 	CustomFields     map[string]string
+	CustomFieldsJSON map[string]json.RawMessage
 	Template         string
 	NoInput          bool
 	Debug            bool
@@ -66,6 +68,7 @@ And, this field is mandatory when creating a sub-task.`)
 	cmd.Flags().StringArray("affects-version", []string{}, "Release info (affectsVersions)")
 	cmd.Flags().StringP("original-estimate", "e", "", prefix+" Original estimate")
 	cmd.Flags().StringToString("custom", custom, "Set custom fields")
+	cmd.Flags().StringToString("custom-json", nil, "Set custom fields with raw JSON values (e.g. customfield_10072='{\"type\":\"doc\",...}')")
 	cmd.Flags().StringP("template", "T", "", "Path to a file to read body/description from")
 	cmd.Flags().Bool("web", false, "Open in web browser after successful creation")
 	cmd.Flags().Bool("no-input", false, "Disable prompt for non-required fields")

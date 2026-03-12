@@ -43,7 +43,8 @@ type CreateRequest struct {
 	SubtaskField string
 	// CustomFields holds all custom fields passed
 	// while creating an issue.
-	CustomFields map[string]string
+	CustomFields     map[string]string
+	CustomFieldsJSON map[string]json.RawMessage
 
 	projectType            string
 	installationType       string
@@ -234,6 +235,7 @@ func (*Client) getRequestData(req *CreateRequest) *createRequest {
 	}
 
 	constructCustomFields(req.CustomFields, req.configuredCustomFields, &data)
+	constructCustomFieldsJSONForCreate(req.CustomFieldsJSON, &data)
 
 	return &data
 }
@@ -279,6 +281,21 @@ func constructCustomFields(fields map[string]string, configuredFields []IssueTyp
 			default:
 				data.Fields.M.customFields[configured.Key] = val
 			}
+		}
+	}
+}
+
+func constructCustomFieldsJSONForCreate(fields map[string]json.RawMessage, data *createRequest) {
+	if len(fields) == 0 {
+		return
+	}
+	if data.Fields.M.customFields == nil {
+		data.Fields.M.customFields = make(customField)
+	}
+	for key, val := range fields {
+		var parsed interface{}
+		if err := json.Unmarshal(val, &parsed); err == nil {
+			data.Fields.M.customFields[key] = parsed
 		}
 	}
 }

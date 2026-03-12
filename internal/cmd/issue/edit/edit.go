@@ -169,8 +169,9 @@ func edit(cmd *cobra.Command, args []string) {
 			Components:      components,
 			FixVersions:     fixVersions,
 			AffectsVersions: affectsVersions,
-			CustomFields:    params.customFields,
-			SkipNotify:      params.skipNotify,
+			CustomFields:     params.customFields,
+			CustomFieldsJSON: params.customFieldsJSON,
+			SkipNotify:       params.skipNotify,
 		}
 		if configuredCustomFields, err := cmdcommon.GetConfiguredCustomFields(); err == nil {
 			cmdcommon.ValidateCustomFields(edr.CustomFields, configuredCustomFields)
@@ -324,8 +325,9 @@ type editParams struct {
 	components      []string
 	fixVersions     []string
 	affectsVersions []string
-	customFields    map[string]string
-	skipNotify      bool
+	customFields     map[string]string
+	customFieldsJSON map[string]json.RawMessage
+	skipNotify       bool
 	noInput         bool
 	debug           bool
 }
@@ -361,6 +363,17 @@ func parseArgsAndFlags(flags query.FlagParser, args []string, project string) *e
 	custom, err := flags.GetStringToString("custom")
 	cmdutil.ExitIfError(err)
 
+	customJSON, err := flags.GetStringToString("custom-json")
+	cmdutil.ExitIfError(err)
+
+	var customFieldsJSON map[string]json.RawMessage
+	if len(customJSON) > 0 {
+		customFieldsJSON = make(map[string]json.RawMessage)
+		for k, v := range customJSON {
+			customFieldsJSON[k] = json.RawMessage(v)
+		}
+	}
+
 	skipNotify, err := flags.GetBool("skip-notify")
 	cmdutil.ExitIfError(err)
 
@@ -381,8 +394,9 @@ func parseArgsAndFlags(flags query.FlagParser, args []string, project string) *e
 		components:      components,
 		fixVersions:     fixVersions,
 		affectsVersions: affectsVersions,
-		customFields:    custom,
-		skipNotify:      skipNotify,
+		customFields:     custom,
+		customFieldsJSON: customFieldsJSON,
+		skipNotify:       skipNotify,
 		noInput:         noInput,
 		debug:           debug,
 	}
@@ -465,6 +479,7 @@ func setFlags(cmd *cobra.Command) {
 	cmd.Flags().StringArray("fix-version", []string{}, "Add/Append release info (fixVersions)")
 	cmd.Flags().StringArray("affects-version", []string{}, "Add/Append release info (affectsVersions)")
 	cmd.Flags().StringToString("custom", custom, "Edit custom fields")
+	cmd.Flags().StringToString("custom-json", nil, "Set custom fields with raw JSON values (e.g. customfield_10072='{\"type\":\"doc\",...}')")
 	cmd.Flags().Bool("skip-notify", false, "Do not notify watchers about the issue update")
 	cmd.Flags().Bool("web", false, "Open in web browser after successful update")
 	cmd.Flags().Bool("no-input", false, "Disable prompt for non-required fields")

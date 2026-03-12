@@ -32,8 +32,9 @@ type EditRequest struct {
 	AffectsVersions []string
 	// CustomFields holds all custom fields passed
 	// while editing the issue.
-	CustomFields map[string]string
-	SkipNotify   bool
+	CustomFields     map[string]string
+	CustomFieldsJSON map[string]json.RawMessage
+	SkipNotify       bool
 
 	configuredCustomFields []IssueTypeField
 }
@@ -354,6 +355,7 @@ func getRequestDataForEdit(req *EditRequest) *editRequest {
 		Fields: fields,
 	}
 	constructCustomFieldsForEdit(req.CustomFields, req.configuredCustomFields, &data)
+	constructCustomFieldsJSONForEdit(req.CustomFieldsJSON, &data)
 
 	return &data
 }
@@ -403,6 +405,21 @@ func constructCustomFieldsForEdit(fields map[string]string, configuredFields []I
 			default:
 				data.Update.M.customFields[configured.Key] = []customFieldTypeStringSet{{Set: val}}
 			}
+		}
+	}
+}
+
+func constructCustomFieldsJSONForEdit(fields map[string]json.RawMessage, data *editRequest) {
+	if len(fields) == 0 {
+		return
+	}
+	if data.Update.M.customFields == nil {
+		data.Update.M.customFields = make(customField)
+	}
+	for key, val := range fields {
+		var parsed interface{}
+		if err := json.Unmarshal(val, &parsed); err == nil {
+			data.Update.M.customFields[key] = []interface{}{map[string]interface{}{"set": parsed}}
 		}
 	}
 }
