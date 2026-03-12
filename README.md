@@ -64,11 +64,11 @@ brew uninstall jira-cli
 Download and install this fork:
 ```sh
 VERSION=$(curl -sI https://github.com/antonzaytsev/jira-cli/releases/latest | grep -i '^location:' | sed 's|.*/v||;s/[[:space:]]//g')
-curl -sL "https://github.com/antonzaytsev/jira-cli/releases/download/v${VERSION}/jira_${VERSION}_macOS_arm64.tar.gz" | tar -xz -C /tmp
-sudo mv /tmp/bin/jira /usr/local/bin/jira
-rm -rf /tmp/bin
+ARCH=arm64 # use x86_64 for Intel Macs
+curl -sL "https://github.com/antonzaytsev/jira-cli/releases/download/v${VERSION}/jira_${VERSION}_macOS_${ARCH}.tar.gz" | tar -xz -C /tmp
+sudo mv "/tmp/jira_${VERSION}_macOS_${ARCH}/bin/jira" /usr/local/bin/jira
+rm -rf "/tmp/jira_${VERSION}_macOS_${ARCH}"
 ```
-For Intel Macs, replace `arm64` with `x86_64`.
 
 **Step 2 — Get a Jira API token**
 
@@ -90,12 +90,7 @@ jira issue list
 
 ### Updating
 
-```sh
-VERSION=$(curl -sI https://github.com/antonzaytsev/jira-cli/releases/latest | grep -i '^location:' | sed 's|.*/v||;s/[[:space:]]//g')
-curl -sL "https://github.com/antonzaytsev/jira-cli/releases/download/v${VERSION}/jira_${VERSION}_macOS_arm64.tar.gz" | tar -xz -C /tmp
-sudo mv /tmp/bin/jira /usr/local/bin/jira
-rm -rf /tmp/bin
-```
+Run the same install commands from Step 1 above.
 
 ---
 
