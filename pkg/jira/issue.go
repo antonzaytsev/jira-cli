@@ -343,6 +343,94 @@ func (c *Client) AddIssueComment(key string, comment interface{}, internal bool)
 	return nil
 }
 
+// EditIssueComment updates an existing comment using PUT /issue/{key}/comment/{id} endpoint.
+func (c *Client) EditIssueComment(key, commentID string, comment interface{}) error {
+	reqBody, err := json.Marshal(&issueCommentRequest{Body: comment})
+	if err != nil {
+		return err
+	}
+
+	path := fmt.Sprintf("/issue/%s/comment/%s", key, commentID)
+	res, err := c.Put(context.Background(), path, reqBody, Header{
+		"Accept":       "application/json",
+		"Content-Type": "application/json",
+	})
+	if err != nil {
+		return err
+	}
+	if res == nil {
+		return ErrEmptyResponse
+	}
+	defer func() { _ = res.Body.Close() }()
+
+	if res.StatusCode != http.StatusOK {
+		return formatUnexpectedResponse(res)
+	}
+	return nil
+}
+
+// DeleteIssueComment deletes a comment using DELETE /issue/{key}/comment/{id} endpoint.
+func (c *Client) DeleteIssueComment(key, commentID string) error {
+	path := fmt.Sprintf("/issue/%s/comment/%s", key, commentID)
+	res, err := c.Delete(context.Background(), path, Header{
+		"Accept": "application/json",
+	})
+	if err != nil {
+		return err
+	}
+	if res == nil {
+		return ErrEmptyResponse
+	}
+	defer func() { _ = res.Body.Close() }()
+
+	if res.StatusCode != http.StatusNoContent {
+		return formatUnexpectedResponse(res)
+	}
+	return nil
+}
+
+// CommentResult holds the response from listing comments.
+type CommentResult struct {
+	StartAt    int           `json:"startAt"`
+	MaxResults int           `json:"maxResults"`
+	Total      int           `json:"total"`
+	Comments   []CommentItem `json:"comments"`
+}
+
+// CommentItem represents a single comment.
+type CommentItem struct {
+	ID      string      `json:"id"`
+	Author  User        `json:"author"`
+	Body    interface{} `json:"body"`
+	Created string      `json:"created"`
+	Updated string      `json:"updated"`
+}
+
+// ListIssueComments lists comments for an issue using GET /issue/{key}/comment endpoint.
+func (c *Client) ListIssueComments(key string) (*CommentResult, error) {
+	path := fmt.Sprintf("/issue/%s/comment", key)
+	res, err := c.Get(context.Background(), path, Header{
+		"Accept": "application/json",
+	})
+	if err != nil {
+		return nil, err
+	}
+	if res == nil {
+		return nil, ErrEmptyResponse
+	}
+	defer func() { _ = res.Body.Close() }()
+
+	if res.StatusCode != http.StatusOK {
+		return nil, formatUnexpectedResponse(res)
+	}
+
+	var out CommentResult
+	if err := json.NewDecoder(res.Body).Decode(&out); err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
 type issueWorklogRequest struct {
 	Started   string `json:"started,omitempty"`
 	TimeSpent string `json:"timeSpent"`
