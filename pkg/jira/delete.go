@@ -13,7 +13,7 @@ func (c *Client) DeleteIssue(key string, cascade bool) error {
 		path = fmt.Sprintf("%s?deleteSubtasks=true", path)
 	}
 
-	res, err := c.DeleteV2(context.Background(), path, nil)
+	res, err := c.Delete(context.Background(), path, nil)
 	if err != nil {
 		return err
 	}

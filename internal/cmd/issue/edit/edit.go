@@ -1,6 +1,7 @@
 package edit
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -133,13 +134,25 @@ func edit(cmd *cobra.Command, args []string) {
 	}
 	affectsVersions = append(affectsVersions, params.affectsVersions...)
 
+	bodyADF, _ := cmd.Flags().GetString("body-adf")
+
 	err = func() error {
 		s := cmdutil.Info("Updating an issue...")
 		defer s.Stop()
 
-		body := params.body
-		if isADF {
-			body = md.ToJiraMD(body)
+		var editBody interface{}
+		if bodyADF != "" {
+			var adfDoc adf.ADF
+			if err := json.Unmarshal([]byte(bodyADF), &adfDoc); err != nil {
+				cmdutil.Failed("Error: invalid ADF JSON: %s", err)
+			}
+			editBody = &adfDoc
+		} else {
+			body := params.body
+			if isADF {
+				body = md.ToJiraMD(body)
+			}
+			editBody = body
 		}
 
 		parent := cmdutil.GetJiraIssueKey(project, params.parentIssueKey)
@@ -150,7 +163,7 @@ func edit(cmd *cobra.Command, args []string) {
 		edr := jira.EditRequest{
 			ParentIssueKey:  parent,
 			Summary:         params.summary,
-			Body:            body,
+			Body:            editBody,
 			Priority:        params.priority,
 			Labels:          labels,
 			Components:      components,
@@ -444,6 +457,7 @@ func setFlags(cmd *cobra.Command) {
 	cmd.Flags().StringP("parent", "P", "", `Link to a parent key`)
 	cmd.Flags().StringP("summary", "s", "", "Edit summary or title")
 	cmd.Flags().StringP("body", "b", "", "Edit description")
+	cmd.Flags().String("body-adf", "", "Issue body/description in raw ADF JSON format (takes priority over --body)")
 	cmd.Flags().StringP("priority", "y", "", "Edit priority")
 	cmd.Flags().StringP("assignee", "a", "", "Edit assignee (email or display name)")
 	cmd.Flags().StringArrayP("label", "l", []string{}, "Append labels")

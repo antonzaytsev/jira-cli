@@ -1,6 +1,7 @@
 package add
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -11,6 +12,7 @@ import (
 	"github.com/ankitpokhrel/jira-cli/internal/cmdcommon"
 	"github.com/ankitpokhrel/jira-cli/internal/cmdutil"
 	"github.com/ankitpokhrel/jira-cli/internal/query"
+	"github.com/ankitpokhrel/jira-cli/pkg/adf"
 	"github.com/ankitpokhrel/jira-cli/pkg/jira"
 	"github.com/ankitpokhrel/jira-cli/pkg/surveyext"
 )
@@ -55,6 +57,7 @@ func NewCmdCommentAdd() *cobra.Command {
 
 	cmd.Flags().Bool("web", false, "Open issue in web browser after adding comment")
 	cmd.Flags().StringP("template", "T", "", "Path to a file to read comment body from")
+	cmd.Flags().String("body-adf", "", "Comment body in raw ADF JSON format (takes priority over positional body argument)")
 	cmd.Flags().Bool("no-input", false, "Disable prompt for non-required fields")
 	cmd.Flags().Bool("internal", false, "Make comment internal")
 
@@ -99,10 +102,19 @@ func add(cmd *cobra.Command, args []string) {
 		}
 	}
 
+	bodyADF, _ := cmd.Flags().GetString("body-adf")
+
 	err := func() error {
 		s := cmdutil.Info("Adding comment")
 		defer s.Stop()
 
+		if bodyADF != "" {
+			var adfDoc adf.ADF
+			if err := json.Unmarshal([]byte(bodyADF), &adfDoc); err != nil {
+				cmdutil.Failed("Error: invalid ADF JSON: %s", err)
+			}
+			return client.AddIssueComment(ac.params.issueKey, &adfDoc, ac.params.internal)
+		}
 		return client.AddIssueComment(ac.params.issueKey, ac.params.body, ac.params.internal)
 	}()
 	cmdutil.ExitIfError(err)

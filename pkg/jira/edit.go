@@ -24,7 +24,7 @@ type EditRequest struct {
 	IssueType       string
 	ParentIssueKey  string
 	Summary         string
-	Body            string
+	Body            interface{}
 	Priority        string
 	Labels          []string
 	Components      []string
@@ -57,7 +57,7 @@ func (c *Client) Edit(key string, req *EditRequest) error {
 		endpoint += "?notifyUsers=false"
 	}
 
-	res, err := c.PutV2(context.Background(), endpoint, body, Header{
+	res, err := c.Put(context.Background(), endpoint, body, Header{
 		"Accept":       "application/json",
 		"Content-Type": "application/json",
 	})
@@ -81,7 +81,7 @@ type editFields struct {
 		Set string `json:"set,omitempty"`
 	} `json:"summary,omitempty"`
 	Description []struct {
-		Set string `json:"set,omitempty"`
+		Set interface{} `json:"set,omitempty"`
 	} `json:"description,omitempty"`
 	Priority []struct {
 		Set struct {
@@ -129,7 +129,7 @@ func (cfm *editFieldsMarshaler) MarshalJSON() ([]byte, error) {
 	if len(cfm.M.Summary) == 0 || cfm.M.Summary[0].Set == "" {
 		cfm.M.Summary = nil
 	}
-	if len(cfm.M.Description) == 0 || cfm.M.Description[0].Set == "" {
+	if len(cfm.M.Description) == 0 || cfm.M.Description[0].Set == nil {
 		cfm.M.Description = nil
 	}
 	if len(cfm.M.Priority) == 0 || cfm.M.Priority[0].Set.Name == "" {
@@ -177,7 +177,7 @@ func getRequestDataForEdit(req *EditRequest) *editRequest {
 			Set string `json:"set,omitempty"`
 		}{{Set: req.Summary}},
 		Description: []struct {
-			Set string `json:"set,omitempty"`
+			Set interface{} `json:"set,omitempty"`
 		}{{Set: req.Body}},
 		Priority: []struct {
 			Set struct {

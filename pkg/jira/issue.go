@@ -185,7 +185,7 @@ func (c *Client) assignIssue(key, assignee, ver string) error {
 
 // GetIssueLinkTypes fetches issue link types using GET /issueLinkType endpoint.
 func (c *Client) GetIssueLinkTypes() ([]*IssueLinkType, error) {
-	res, err := c.GetV2(context.Background(), "/issueLinkType", nil)
+	res, err := c.Get(context.Background(), "/issueLinkType", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -238,7 +238,7 @@ func (c *Client) LinkIssue(inwardIssue, outwardIssue, linkType string) error {
 		return err
 	}
 
-	res, err := c.PostV2(context.Background(), "/issueLink", body, Header{
+	res, err := c.Post(context.Background(), "/issueLink", body, Header{
 		"Accept":       "application/json",
 		"Content-Type": "application/json",
 	})
@@ -259,7 +259,7 @@ func (c *Client) LinkIssue(inwardIssue, outwardIssue, linkType string) error {
 // UnlinkIssue disconnects two issues using DELETE /issueLink/{linkId} endpoint.
 func (c *Client) UnlinkIssue(linkID string) error {
 	deleteLinkURL := fmt.Sprintf("/issueLink/%s", linkID)
-	res, err := c.DeleteV2(context.Background(), deleteLinkURL, Header{
+	res, err := c.Delete(context.Background(), deleteLinkURL, Header{
 		"Accept":       "application/json",
 		"Content-Type": "application/json",
 	})
@@ -305,19 +305,27 @@ type issueCommentProperty struct {
 	Value issueCommentPropertyValue `json:"value"`
 }
 type issueCommentRequest struct {
-	Body       string                 `json:"body"`
+	Body       interface{}            `json:"body"`
 	Properties []issueCommentProperty `json:"properties"`
 }
 
 // AddIssueComment adds comment to an issue using POST /issue/{key}/comment endpoint.
-func (c *Client) AddIssueComment(key, comment string, internal bool) error {
-	body, err := json.Marshal(&issueCommentRequest{Body: md.ToJiraMD(comment), Properties: []issueCommentProperty{{Key: "sd.public.comment", Value: issueCommentPropertyValue{Internal: internal}}}})
+func (c *Client) AddIssueComment(key string, comment interface{}, internal bool) error {
+	var body interface{}
+	switch v := comment.(type) {
+	case string:
+		body = v
+	default:
+		body = v
+	}
+
+	reqBody, err := json.Marshal(&issueCommentRequest{Body: body, Properties: []issueCommentProperty{{Key: "sd.public.comment", Value: issueCommentPropertyValue{Internal: internal}}}})
 	if err != nil {
 		return err
 	}
 
 	path := fmt.Sprintf("/issue/%s/comment", key)
-	res, err := c.PostV2(context.Background(), path, body, Header{
+	res, err := c.Post(context.Background(), path, reqBody, Header{
 		"Accept":       "application/json",
 		"Content-Type": "application/json",
 	})
@@ -360,7 +368,7 @@ func (c *Client) AddIssueWorklog(key, started, timeSpent, comment, newEstimate s
 	if newEstimate != "" {
 		path = fmt.Sprintf("%s?adjustEstimate=new&newEstimate=%s", path, newEstimate)
 	}
-	res, err := c.PostV2(context.Background(), path, body, Header{
+	res, err := c.Post(context.Background(), path, body, Header{
 		"Accept":       "application/json",
 		"Content-Type": "application/json",
 	})
@@ -380,7 +388,7 @@ func (c *Client) AddIssueWorklog(key, started, timeSpent, comment, newEstimate s
 
 // GetField gets all fields configured for a Jira instance using GET /field endpiont.
 func (c *Client) GetField() ([]*Field, error) {
-	res, err := c.GetV2(context.Background(), "/field", Header{
+	res, err := c.Get(context.Background(), "/field", Header{
 		"Accept":       "application/json",
 		"Content-Type": "application/json",
 	})
@@ -442,7 +450,7 @@ func (c *Client) RemoteLinkIssue(issueID, title, url string) error {
 
 	path := fmt.Sprintf("/issue/%s/remotelink", issueID)
 
-	res, err := c.PostV2(context.Background(), path, body, Header{
+	res, err := c.Post(context.Background(), path, body, Header{
 		"Accept":       "application/json",
 		"Content-Type": "application/json",
 	})

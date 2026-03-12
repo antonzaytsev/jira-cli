@@ -239,6 +239,11 @@ func (c *Client) PutV1(ctx context.Context, path string, body []byte, headers He
 	return c.request(ctx, http.MethodPut, c.server+baseURLv1+path, body, headers)
 }
 
+// Delete sends DELETE request to v3 version of the jira api.
+func (c *Client) Delete(ctx context.Context, path string, headers Header) (*http.Response, error) {
+	return c.request(ctx, http.MethodDelete, c.server+baseURLv3+path, nil, headers)
+}
+
 // DeleteV2 sends DELETE request to v2 version of the jira api.
 func (c *Client) DeleteV2(ctx context.Context, path string, headers Header) (*http.Response, error) {
 	return c.request(ctx, http.MethodDelete, c.server+baseURLv2+path, nil, headers)

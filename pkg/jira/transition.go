@@ -97,7 +97,7 @@ func (c *Client) Transition(key string, data *TransitionRequest) (int, error) {
 
 	path := fmt.Sprintf("/issue/%s/transitions", key)
 
-	res, err := c.PostV2(context.Background(), path, body, Header{
+	res, err := c.Post(context.Background(), path, body, Header{
 		"Accept":       "application/json",
 		"Content-Type": "application/json",
 	})
