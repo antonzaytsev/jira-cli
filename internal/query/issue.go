@@ -105,10 +105,13 @@ func (i *Issue) Get() string {
 		}
 	})
 
-	if i.params.Reverse {
-		q.OrderBy(obf, jql.DirectionAscending)
-	} else {
-		q.OrderBy(obf, jql.DirectionDescending)
+	hasOrderBy := i.params.JQL != "" && strings.Contains(strings.ToUpper(i.params.JQL), "ORDER BY")
+	if !hasOrderBy {
+		if i.params.Reverse {
+			q.OrderBy(obf, jql.DirectionAscending)
+		} else {
+			q.OrderBy(obf, jql.DirectionDescending)
+		}
 	}
 
 	return q.String()
