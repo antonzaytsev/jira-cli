@@ -15,7 +15,6 @@ import (
 	"github.com/ankitpokhrel/jira-cli/internal/query"
 	"github.com/ankitpokhrel/jira-cli/pkg/adf"
 	"github.com/ankitpokhrel/jira-cli/pkg/jira"
-	"github.com/ankitpokhrel/jira-cli/pkg/md"
 	"github.com/ankitpokhrel/jira-cli/pkg/surveyext"
 )
 
@@ -80,14 +79,10 @@ func edit(cmd *cobra.Command, args []string) {
 	}()
 	cmdutil.ExitIfError(err)
 
-	var (
-		isADF        bool
-		originalBody string
-	)
+	var originalBody string
 
 	if issue.Fields.Description != nil {
 		if adfBody, ok := issue.Fields.Description.(*adf.ADF); ok {
-			isADF = true
 			originalBody = adf.NewTranslator(adfBody, adf.NewJiraMarkdownTranslator()).Translate()
 		} else {
 			originalBody = issue.Fields.Description.(string)
@@ -148,11 +143,7 @@ func edit(cmd *cobra.Command, args []string) {
 			}
 			editBody = &adfDoc
 		} else {
-			body := params.body
-			if isADF {
-				body = md.ToJiraMD(body)
-			}
-			editBody = body
+			editBody = params.body
 		}
 
 		parent := cmdutil.GetJiraIssueKey(project, params.parentIssueKey)

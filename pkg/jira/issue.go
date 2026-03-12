@@ -314,7 +314,19 @@ func (c *Client) AddIssueComment(key string, comment interface{}, internal bool)
 	var body interface{}
 	switch v := comment.(type) {
 	case string:
-		body = v
+		if v != "" {
+			body = &adf.ADF{
+				Version: 1,
+				DocType: "doc",
+				Content: []*adf.Node{{
+					NodeType: adf.NodeParagraph,
+					Content: []*adf.Node{{
+						NodeType:  adf.ChildNodeText,
+						NodeValue: adf.NodeValue{Text: v},
+					}},
+				}},
+			}
+		}
 	default:
 		body = v
 	}
@@ -345,7 +357,26 @@ func (c *Client) AddIssueComment(key string, comment interface{}, internal bool)
 
 // EditIssueComment updates an existing comment using PUT /issue/{key}/comment/{id} endpoint.
 func (c *Client) EditIssueComment(key, commentID string, comment interface{}) error {
-	reqBody, err := json.Marshal(&issueCommentRequest{Body: comment})
+	var body interface{}
+	switch v := comment.(type) {
+	case string:
+		if v != "" {
+			body = &adf.ADF{
+				Version: 1,
+				DocType: "doc",
+				Content: []*adf.Node{{
+					NodeType: adf.NodeParagraph,
+					Content: []*adf.Node{{
+						NodeType:  adf.ChildNodeText,
+						NodeValue: adf.NodeValue{Text: v},
+					}},
+				}},
+			}
+		}
+	default:
+		body = v
+	}
+	reqBody, err := json.Marshal(&issueCommentRequest{Body: body})
 	if err != nil {
 		return err
 	}

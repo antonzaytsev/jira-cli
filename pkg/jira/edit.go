@@ -8,6 +8,8 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+
+	"github.com/ankitpokhrel/jira-cli/pkg/adf"
 )
 
 const separatorMinus = "-"
@@ -173,13 +175,30 @@ func getRequestDataForEdit(req *EditRequest) *editRequest {
 		req.Labels = []string{}
 	}
 
+	var descBody interface{}
+	if s, ok := req.Body.(string); ok && s != "" {
+		descBody = &adf.ADF{
+			Version: 1,
+			DocType: "doc",
+			Content: []*adf.Node{{
+				NodeType: adf.NodeParagraph,
+				Content: []*adf.Node{{
+					NodeType:  adf.ChildNodeText,
+					NodeValue: adf.NodeValue{Text: s},
+				}},
+			}},
+		}
+	} else {
+		descBody = req.Body
+	}
+
 	update := editFieldsMarshaler{editFields{
 		Summary: []struct {
 			Set string `json:"set,omitempty"`
 		}{{Set: req.Summary}},
 		Description: []struct {
 			Set interface{} `json:"set,omitempty"`
-		}{{Set: req.Body}},
+		}{{Set: descBody}},
 		Priority: []struct {
 			Set struct {
 				Name string `json:"name,omitempty"`
