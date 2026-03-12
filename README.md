@@ -79,39 +79,25 @@ docker run -it --rm ghcr.io/ankitpokhrel/jira-cli:latest
 
 Follow the [installation guide](https://github.com/ankitpokhrel/jira-cli/wiki/Installation) for other installation methods like `Homebrew`, `Nix`, etc.
 
-### Install from source on macOS (replacing Homebrew version)
-
-If you have `jira-cli` installed via Homebrew and want to replace it with a build from this repo:
+### Install from this fork on macOS (replacing Homebrew version)
 
 1. Uninstall the Homebrew version:
    ```sh
    brew uninstall jira-cli
    ```
 
-2. Make sure you have Go installed (`brew install go` if needed) and `$(go env GOPATH)/bin` is in your `PATH`:
+2. Download and install the latest release:
    ```sh
-   export PATH="$(go env GOPATH)/bin:$PATH"
+   curl -sL https://github.com/antonzaytsev/jira-cli/releases/latest/download/jira_macOS_arm64.tar.gz | tar -xz
+   sudo mv bin/jira /usr/local/bin/jira
+   rm -rf bin/
    ```
-   Add the line above to your `~/.zshrc` (or `~/.bashrc`) to make it permanent.
+   For Intel Macs, replace `arm64` with `x86_64`.
 
-3. Clone the repo and install:
-   ```sh
-   git clone https://github.com/ankitpokhrel/jira-cli.git
-   cd jira-cli
-   make install
-   ```
-
-4. Verify the installation:
+3. Verify the installation:
    ```sh
    jira version
    ```
-
-To update later, pull the latest changes and re-run `make install`:
-```sh
-cd jira-cli
-git pull
-make install
-```
 
 <a href="https://repology.org/project/jira-cli-go/versions">
     <img src="https://repology.org/badge/vertical-allrepos/jira-cli-go.svg" alt="Packaging status">
