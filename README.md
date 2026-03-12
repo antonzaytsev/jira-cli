@@ -1,56 +1,31 @@
-<div align="center">
-    <a href="#">
-        <img alt="stargazers over time" src="https://stars.medv.io/ankitpokhrel/jira-cli.svg" />
-    </a>
-    <h1 align="center">JiraCLI</h1>
-</div>
+# JiraCLI — Automation-First Fork
 
-<div>
-    <p align="center">
-        <a href="https://github.com/ankitpokhrel/jira-cli/actions?query=workflow%3Abuild+branch%3Amaster">
-            <img alt="Build" src="https://img.shields.io/github/actions/workflow/status/ankitpokhrel/jira-cli/ci.yml?branch=main&style=flat-square" />
-        </a>
-        <a href="https://goreportcard.com/report/github.com/ankitpokhrel/jira-cli">
-            <img alt="GO Report-card" src="https://goreportcard.com/badge/github.com/ankitpokhrel/jira-cli?style=flat-square" />
-        </a>
-        <a href="https://github.com/ankitpokhrel/jira-cli/blob/master/LICENSE">
-            <img alt="Software License" src="https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square" />
-        </a>
-        <a href="#">
-            <img alt="Downloads" src="https://img.shields.io/github/downloads/ankitpokhrel/jira-cli/total?style=flat-square" />
-        </a>
-        <a href="https://opencollective.com/jira-cli#backers">
-            <img alt="Financial Contributors" src="https://img.shields.io/opencollective/backers/jira-cli?style=flat-square" />
-        </a>
-    </p>
-    <p align="center">
-        <i>Feature-rich Interactive Jira Command Line</i>
-    </p>
-    <img align="center" alt="JiraCLI Demo" src=".github/assets/demo.gif" /><br/><br/>
-    <p align="center">
-         <sub>
-            Financial support from private and corporate sponsors ensures the tool's continued development.<br/>
-            Please <a href="https://opencollective.com/jira-cli#backers">consider sponsoring the project</a> if you or your company rely on JiraCLI.
-         </sub><br/><br/>
-        <a href="https://opencollective.com/jira-cli#backers" target="_blank">
-            <img src="https://opencollective.com/jira-cli/backers.svg" alt="jira-cli open collective badge">
-        </a>
-    </p>
-</div>
+> **Fork of [ankitpokhrel/jira-cli](https://github.com/ankitpokhrel/jira-cli)** rebuilt for AI agents and non-interactive automation.
 
-<div>
-   <h2 align="center">Supporters</h2>
-   <p align="center">
-      <a href="https://www.atlassian.com?from=ankitpokhrel/jira-cli" target="_blank">
-         <img alt="Atlassian Logo" src=".github/assets/supporters/atlassian.png" />
-      </a><br/>
-      <a href="https://www.jetbrains.com/?from=ankitpokhrel/jira-cli" target="_blank">
-         <img alt="JetBrains Logo" src=".github/assets/supporters/jetbrains.png" />
-      </a>
-   </p>
-</div>
+The original JiraCLI is an excellent interactive tool. However, it was designed for humans at a terminal — it hangs on stdin, destroys rich descriptions, leaks credentials in debug output, and lacks CRUD for comments and attachments. This fork fixes all of that.
 
-This is a fork of [ankitpokhrel/jira-cli](https://github.com/ankitpokhrel/jira-cli) with additional features for AI-agent workflows.
+## Why this fork?
+
+The original `jira-cli` v1.7.0 has 14 documented issues that make it unreliable for programmatic use (see [investigation](docs/1-investigation.md)). This fork addresses them:
+
+| Problem (original v1.7.0) | Fix in this fork |
+|---|---|
+| **Writes destroy ADF content** — `-b` sends plain text to API v3, corrupting rich descriptions | Plain text auto-wrapped in ADF; `--body-adf` flag for raw ADF JSON |
+| **API v2 for writes, v3 for reads** — cannot write formatted content | All operations use API v3 |
+| **Commands hang on stdin** — blocks indefinitely without `echo "" \|` prefix | Non-interactive by default; stdin replaced with `/dev/null` when TTY detected |
+| **No comment management** — add only, no edit/delete/list | Full CRUD: `comment add`, `edit`, `delete`, `list` |
+| **No attachment support** — requires raw curl with multipart | `attach add FILE` and `attach delete ID` |
+| **Custom fields limited to strings** — cannot set arrays, objects, or ADF | `--custom-json` flag for raw JSON values |
+| **No transition discovery** — must guess state names | `move` lists available transitions on mismatch |
+| **JQL ORDER BY mangled** — appends duplicate ORDER BY | Detects existing ORDER BY in raw JQL, skips appending |
+| **Debug leaks auth token** — full Base64 Authorization in output | Authorization header redacted in debug dumps |
+| **No field selection on view** — always fetches all fields | `--fields` flag on `view` for selective API fetching |
+| **ANSI codes in --plain output** — breaks machine parsing | Colors stripped in plain mode |
+| **Cross-project queries broken** — forced project context | Works with `-q` for arbitrary JQL |
+
+### What's unchanged
+
+All read functionality, configuration, TUI, and interactive features from the original work exactly the same. The `--interactive` flag re-enables prompts if you want them.
 
 ## Quick setup (macOS)
 
@@ -93,20 +68,40 @@ curl -sL https://raw.githubusercontent.com/antonzaytsev/jira-cli/main/install.sh
 
 ---
 
+## Agent usage patterns
+
+```bash
+# READS — no prefix needed
+jira issue view PO-2701 --plain
+jira issue view PO-2701 --raw
+jira issue view PO-2701 --raw --fields summary,status,assignee
+jira issue list --plain -q"assignee = currentUser() ORDER BY updated DESC"
+jira issue list --csv --columns KEY,STATUS,SUMMARY
+
+# WRITES — no stdin pipe needed (fixed in this fork)
+jira issue edit KEY -s"New summary" --no-input
+jira issue edit KEY -b"Plain text body" --no-input
+jira issue edit KEY --body-adf '{"type":"doc","version":1,...}' --no-input
+jira issue comment add KEY "Plain text comment"
+jira issue comment add KEY --body-adf '{"type":"doc","version":1,...}'
+jira issue comment edit KEY COMMENT-ID --body "Updated text"
+jira issue comment delete KEY COMMENT-ID
+jira issue comment list KEY --plain
+jira issue attach add KEY /path/to/file
+jira issue attach delete ATTACHMENT-ID
+jira issue move KEY "In Progress"
+```
+
+---
+
 JiraCLI is an interactive command line tool for Atlassian Jira that will help you avoid Jira UI to some extent. This
 tool may not be able to do everything, but it has all the essential features required to improve your day-to-day workflow with Jira.
 
-> This tool is heavily inspired by the [GitHub CLI](https://github.com/cli/cli)
+> This tool is heavily inspired by the [GitHub CLI](https://github.com/cli/cli). Original project: [ankitpokhrel/jira-cli](https://github.com/ankitpokhrel/jira-cli)
 
 ## Other installation methods
 
-`jira-cli` is also available from the upstream [releases page](https://github.com/ankitpokhrel/jira-cli/releases), via `Homebrew`, `Nix`, or Docker:
-
-```sh
-docker run -it --rm ghcr.io/ankitpokhrel/jira-cli:latest
-```
-
-See the upstream [installation guide](https://github.com/ankitpokhrel/jira-cli/wiki/Installation) for details.
+See the upstream [installation guide](https://github.com/ankitpokhrel/jira-cli/wiki/Installation) for alternative methods (Homebrew, Nix, Docker).
 
 ## Configuration
 
