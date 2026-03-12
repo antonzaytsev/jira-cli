@@ -28,7 +28,11 @@ const (
 
 // GetIssue fetches issue details using GET /issue/{key} endpoint.
 func (c *Client) GetIssue(key string, opts ...filter.Filter) (*Issue, error) {
-	iss, err := c.getIssue(key, apiVersion3)
+	var fields []string
+	if v := filter.Collection(opts).Get(issue.KeyIssueFields); v != nil {
+		fields = v.([]string)
+	}
+	iss, err := c.getIssue(key, apiVersion3, fields...)
 	if err != nil {
 		return nil, err
 	}
@@ -52,8 +56,8 @@ func (c *Client) GetIssueV2(key string, _ ...filter.Filter) (*Issue, error) {
 	return c.getIssue(key, apiVersion2)
 }
 
-func (c *Client) getIssue(key, ver string) (*Issue, error) {
-	rawOut, err := c.getIssueRaw(key, ver)
+func (c *Client) getIssue(key, ver string, fields ...string) (*Issue, error) {
+	rawOut, err := c.getIssueRaw(key, ver, fields...)
 	if err != nil {
 		return nil, err
 	}
@@ -67,8 +71,8 @@ func (c *Client) getIssue(key, ver string) (*Issue, error) {
 }
 
 // GetIssueRaw fetches issue details same as GetIssue but returns the raw API response body string.
-func (c *Client) GetIssueRaw(key string) (string, error) {
-	return c.getIssueRaw(key, apiVersion3)
+func (c *Client) GetIssueRaw(key string, fields ...string) (string, error) {
+	return c.getIssueRaw(key, apiVersion3, fields...)
 }
 
 // GetIssueV2Raw fetches issue details same as GetIssueV2 but returns the raw API response body string.
@@ -76,8 +80,11 @@ func (c *Client) GetIssueV2Raw(key string) (string, error) {
 	return c.getIssueRaw(key, apiVersion2)
 }
 
-func (c *Client) getIssueRaw(key, ver string) (string, error) {
+func (c *Client) getIssueRaw(key, ver string, fields ...string) (string, error) {
 	path := fmt.Sprintf("/issue/%s", key)
+	if len(fields) > 0 {
+		path += "?fields=" + strings.Join(fields, ",")
+	}
 
 	var (
 		res *http.Response

@@ -96,12 +96,12 @@ func ProxyCreate(c *jira.Client, cr *jira.CreateRequest) (*jira.CreateResponse, 
 }
 
 // ProxyGetIssueRaw executes the same request as ProxyGetIssue but returns raw API response body string.
-func ProxyGetIssueRaw(c *jira.Client, key string) (string, error) {
+func ProxyGetIssueRaw(c *jira.Client, key string, fields ...string) (string, error) {
 	it := viper.GetString("installation")
 	if it == jira.InstallationTypeLocal {
 		return c.GetIssueV2Raw(key)
 	}
-	return c.GetIssueRaw(key)
+	return c.GetIssueRaw(key, fields...)
 }
 
 // ProxyGetIssue uses either a v2 or v3 version of the Jira GET /issue/{key}
