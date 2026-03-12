@@ -285,14 +285,14 @@ func (i Issue) subtasks() string {
 	}
 
 	subtasks.WriteString(
-		fmt.Sprintf("\n %s\n\n", coloredOut("SUBTASKS", color.FgWhite, color.Bold)),
+		fmt.Sprintf("\n %s\n\n", i.colored("SUBTASKS", color.FgWhite, color.Bold)),
 	)
 	for idx := range i.Data.Fields.Subtasks {
 		task := i.Data.Fields.Subtasks[idx]
 		subtasks.WriteString(
 			fmt.Sprintf(
 				"  %s %s • %s • %s\n",
-				coloredOut(pad(task.Key, maxKeyLen), color.FgGreen, color.Bold),
+				i.colored(pad(task.Key, maxKeyLen), color.FgGreen, color.Bold),
 				shortenAndPad(task.Fields.Summary, summaryLen),
 				pad(task.Fields.Priority.Name, maxPriorityLen),
 				pad(task.Fields.Status.Name, maxStatusLen),
@@ -359,13 +359,13 @@ func (i Issue) linkedIssues() string {
 
 	for _, k := range keys {
 		linked.WriteString(
-			fmt.Sprintf("\n %s\n\n", coloredOut(strings.ToUpper(k), color.FgWhite, color.Bold)),
+			fmt.Sprintf("\n %s\n\n", i.colored(strings.ToUpper(k), color.FgWhite, color.Bold)),
 		)
 		for _, iss := range linkMap[k] {
 			linked.WriteString(
 				fmt.Sprintf(
 					"  %s %s • %s • %s • %s\n",
-					coloredOut(pad(iss.Key, maxKeyLen), color.FgGreen, color.Bold),
+					i.colored(pad(iss.Key, maxKeyLen), color.FgGreen, color.Bold),
 					shortenAndPad(iss.Fields.Summary, summaryLen),
 					pad(iss.Fields.IssueType.Name, maxTypeLen),
 					pad(iss.Fields.Priority.Name, maxPriorityLen),
@@ -405,11 +405,11 @@ func (i Issue) comments() []issueComment {
 		}
 		meta := fmt.Sprintf(
 			"\n %s • %s",
-			coloredOut(authorName(), color.FgWhite, color.Bold),
-			coloredOut(cmdutil.FormatDateTimeHuman(c.Created, jira.RFC3339), color.FgWhite, color.Bold),
+			i.colored(authorName(), color.FgWhite, color.Bold),
+			i.colored(cmdutil.FormatDateTimeHuman(c.Created, jira.RFC3339), color.FgWhite, color.Bold),
 		)
 		if idx == total-1 {
-			meta += fmt.Sprintf(" • %s", coloredOut("Latest comment", color.FgCyan, color.Bold))
+			meta += fmt.Sprintf(" • %s", i.colored("Latest comment", color.FgCyan, color.Bold))
 		}
 		comments = append(comments, issueComment{
 			meta: meta,
@@ -428,14 +428,28 @@ func (i Issue) footer() string {
 		if i.Display.Plain {
 			out.WriteString("\n")
 		}
-		out.WriteString(fmt.Sprintf("%s\n", gray("Use --comments <limit> with `jira issue view` to load more comments")))
+		out.WriteString(fmt.Sprintf("%s\n", i.grayText("Use --comments <limit> with `jira issue view` to load more comments")))
 	}
 	if i.Display.Plain {
 		out.WriteString("\n")
 	}
-	out.WriteString(gray(fmt.Sprintf("View this issue on Jira: %s", cmdutil.GenerateServerBrowseURL(i.Server, i.Data.Key))))
+	out.WriteString(i.grayText(fmt.Sprintf("View this issue on Jira: %s", cmdutil.GenerateServerBrowseURL(i.Server, i.Data.Key))))
 
 	return out.String()
+}
+
+func (i Issue) colored(msg string, clr color.Attribute, attrs ...color.Attribute) string {
+	if i.Display.Plain {
+		return msg
+	}
+	return coloredOut(msg, clr, attrs...)
+}
+
+func (i Issue) grayText(msg string) string {
+	if i.Display.Plain {
+		return msg
+	}
+	return gray(msg)
 }
 
 // renderPlain renders the issue in plain view.
