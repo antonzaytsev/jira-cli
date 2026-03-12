@@ -121,6 +121,9 @@ func (ac *watchCmd) setIssueKey(project string) error {
 	if ac.params.key != "" {
 		return nil
 	}
+	if !cmdutil.IsInteractive() {
+		return cmdutil.ErrNonInteractive
+	}
 
 	var ans string
 
@@ -141,6 +144,10 @@ func (ac *watchCmd) setWatcher(project string) error {
 	if ac.params.user != "" && len(ac.users) == 1 {
 		ac.params.user = getQueryableName(ac.users[0].Name, ac.users[0].DisplayName)
 		return nil
+	}
+
+	if !cmdutil.IsInteractive() {
+		return cmdutil.ErrNonInteractive
 	}
 
 	var (

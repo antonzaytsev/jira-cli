@@ -132,6 +132,9 @@ func (lc *linkCmd) setInwardIssueKey(project string) error {
 	if lc.params.inwardIssueKey != "" {
 		return nil
 	}
+	if !cmdutil.IsInteractive() {
+		return cmdutil.ErrNonInteractive
+	}
 
 	var ans string
 
@@ -151,6 +154,9 @@ func (lc *linkCmd) setInwardIssueKey(project string) error {
 func (lc *linkCmd) setOutwardIssueKey(project string) error {
 	if lc.params.outwardIssueKey != "" {
 		return nil
+	}
+	if !cmdutil.IsInteractive() {
+		return cmdutil.ErrNonInteractive
 	}
 
 	var ans string
@@ -184,6 +190,9 @@ func (lc *linkCmd) setLinkTypes() error {
 func (lc *linkCmd) setDesiredLinkType() error {
 	if lc.params.linkType != "" {
 		return nil
+	}
+	if !cmdutil.IsInteractive() {
+		return cmdutil.ErrNonInteractive
 	}
 
 	options := make([]string, 0, len(lc.linkTypes))

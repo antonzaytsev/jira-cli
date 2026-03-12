@@ -109,6 +109,9 @@ func (lc *linkCmd) setIssueKey(project string) error {
 	if lc.params.issueKey != "" {
 		return nil
 	}
+	if !cmdutil.IsInteractive() {
+		return cmdutil.ErrNonInteractive
+	}
 
 	var ans string
 
@@ -129,6 +132,9 @@ func (lc *linkCmd) setRemoteLinkURL() error {
 	if lc.params.url != "" {
 		return nil
 	}
+	if !cmdutil.IsInteractive() {
+		return cmdutil.ErrNonInteractive
+	}
 
 	var ans string
 
@@ -148,6 +154,9 @@ func (lc *linkCmd) setRemoteLinkURL() error {
 func (lc *linkCmd) setRemoteLinkTitle() error {
 	if lc.params.title != "" {
 		return nil
+	}
+	if !cmdutil.IsInteractive() {
+		return cmdutil.ErrNonInteractive
 	}
 
 	var ans string

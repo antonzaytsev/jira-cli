@@ -70,6 +70,11 @@ func create(cmd *cobra.Command, _ []string) {
 
 	qs := cc.getQuestions(projectType)
 	if len(qs) > 0 {
+		if !cmdutil.IsInteractive() {
+			cmdutil.Failed(
+				"Params `--summary` and `--name` is mandatory when using a non-interactive mode",
+			)
+		}
 		ans := struct{ Name, Summary, Body, Action string }{}
 		err := survey.Ask(qs, &ans)
 		cmdutil.ExitIfError(err)

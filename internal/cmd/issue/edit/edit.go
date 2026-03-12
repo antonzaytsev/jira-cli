@@ -96,7 +96,7 @@ func edit(cmd *cobra.Command, args []string) {
 
 	cmdutil.ExitIfError(ec.askQuestions(issue, originalBody))
 
-	if !params.noInput {
+	if !params.noInput && cmdutil.IsInteractive() {
 		getAnswers(params, issue)
 	}
 
@@ -265,7 +265,7 @@ type editCmd struct {
 }
 
 func (ec *editCmd) askQuestions(issue *jira.Issue, originalBody string) error {
-	if ec.params.noInput {
+	if ec.params.noInput || !cmdutil.IsInteractive() {
 		return nil
 	}
 

@@ -113,6 +113,8 @@ func NewCmdRoot() *cobra.Command {
 		),
 	)
 	cmd.PersistentFlags().BoolVar(&debug, "debug", false, "Turn on debug output")
+	cmd.PersistentFlags().Bool("interactive", false, "Enable interactive prompts (default: non-interactive for automation safety)")
+	_ = viper.BindPFlag("interactive", cmd.PersistentFlags().Lookup("interactive"))
 
 	cmd.SetHelpFunc(helpFunc)
 

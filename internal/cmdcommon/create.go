@@ -151,6 +151,10 @@ func GetMetadataQuestions(cat []string) []*survey.Question {
 
 // HandleNoInput handles operations for --no-input flag.
 func HandleNoInput(params *CreateParams) error {
+	if !cmdutil.IsInteractive() {
+		return nil
+	}
+
 	answer := struct{ Action string }{}
 	for answer.Action != ActionSubmit {
 		err := survey.Ask([]*survey.Question{GetNextAction()}, &answer)

@@ -128,6 +128,16 @@ func GetConfigHome() (string, error) {
 	return home + "/.config", nil
 }
 
+// IsInteractive returns true if the CLI is running in interactive mode.
+// Non-interactive mode (the default) prevents all survey/prompt calls,
+// ensuring the CLI never hangs waiting for user input.
+func IsInteractive() bool {
+	return viper.GetBool("interactive")
+}
+
+// ErrNonInteractive is returned when a command needs user input but is running non-interactively.
+var ErrNonInteractive = fmt.Errorf("this operation requires interactive mode (use --interactive flag) or provide all required flags")
+
 // StdinHasData checks if standard input has any data to be processed.
 func StdinHasData() bool {
 	return !term.IsTerminal(int(os.Stdin.Fd()))

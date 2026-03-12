@@ -1,4 +1,4 @@
-.PHONY: all deps build install lint test ci jira.server clean distclean
+.PHONY: all deps build install lint test ci docker.build docker.run jira.server clean distclean
 
 ##############
 # Build vars #
@@ -53,6 +53,16 @@ test:
 	CGO_ENABLED=1 go test -race ./...
 
 ci: lint test
+
+################
+# Docker build #
+################
+
+docker.build:
+	docker build -t jira-cli:latest .
+
+docker.run:
+	docker run --rm jira-cli:latest $(ARGS)
 
 jira.server:
 	docker compose up -d

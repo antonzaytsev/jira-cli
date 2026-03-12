@@ -87,7 +87,7 @@ func add(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	if !params.noInput {
+	if !params.noInput && cmdutil.IsInteractive() {
 		answer := struct{ Action string }{}
 		err := survey.Ask([]*survey.Question{getNextAction()}, &answer)
 		cmdutil.ExitIfError(err)
@@ -175,6 +175,9 @@ func (ac *addCmd) setIssueKey() error {
 	if ac.params.issueKey != "" {
 		return nil
 	}
+	if !cmdutil.IsInteractive() {
+		return cmdutil.ErrNonInteractive
+	}
 
 	var ans string
 
@@ -195,6 +198,9 @@ func (ac *addCmd) getQuestions() []*survey.Question {
 	var qs []*survey.Question
 
 	if ac.params.timeSpent == "" {
+		if !cmdutil.IsInteractive() {
+			cmdutil.Failed("TIME_SPENT is required in non-interactive mode")
+		}
 		qs = append(qs, &survey.Question{
 			Name: "timeSpent",
 			Prompt: &survey.Input{
@@ -205,7 +211,7 @@ func (ac *addCmd) getQuestions() []*survey.Question {
 		})
 	}
 
-	if !ac.params.noInput && ac.params.comment == "" {
+	if !ac.params.noInput && cmdutil.IsInteractive() && ac.params.comment == "" {
 		qs = append(qs, &survey.Question{
 			Name: "comment",
 			Prompt: &surveyext.JiraEditor{

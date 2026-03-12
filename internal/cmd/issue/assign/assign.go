@@ -155,6 +155,9 @@ func (ac *assignCmd) setIssueKey(project string) error {
 	if ac.params.key != "" {
 		return nil
 	}
+	if !cmdutil.IsInteractive() {
+		return cmdutil.ErrNonInteractive
+	}
 
 	var ans string
 
@@ -180,6 +183,10 @@ func (ac *assignCmd) setAssignee(project string) error {
 	lu := strings.ToLower(ac.params.user)
 	if lu == strings.ToLower(optionNone) || lu == strings.ToLower(optionDefault) || lu == "x" {
 		return nil
+	}
+
+	if !cmdutil.IsInteractive() {
+		return cmdutil.ErrNonInteractive
 	}
 
 	var (

@@ -179,6 +179,9 @@ func (mc *moveCmd) setIssueKey(project string) error {
 	if mc.params.key != "" {
 		return nil
 	}
+	if !cmdutil.IsInteractive() {
+		return cmdutil.ErrNonInteractive
+	}
 
 	var ans string
 
@@ -198,6 +201,9 @@ func (mc *moveCmd) setIssueKey(project string) error {
 func (mc *moveCmd) setDesiredState(it string) error {
 	if mc.params.state != "" {
 		return nil
+	}
+	if !cmdutil.IsInteractive() {
+		return cmdutil.ErrNonInteractive
 	}
 
 	var (

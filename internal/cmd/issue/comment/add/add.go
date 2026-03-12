@@ -73,7 +73,7 @@ func add(cmd *cobra.Command, args []string) {
 		params:    params,
 	}
 
-	if ac.isNonInteractive() {
+	if ac.isNonInteractive() || !cmdutil.IsInteractive() {
 		ac.params.noInput = true
 
 		if ac.isMandatoryParamsMissing() {
@@ -92,7 +92,7 @@ func add(cmd *cobra.Command, args []string) {
 		params.body = ans.Body
 	}
 
-	if !params.noInput {
+	if !params.noInput && cmdutil.IsInteractive() {
 		answer := struct{ Action string }{}
 		err := survey.Ask([]*survey.Question{getNextAction()}, &answer)
 		cmdutil.ExitIfError(err)
@@ -181,6 +181,9 @@ type addCmd struct {
 func (ac *addCmd) setIssueKey() error {
 	if ac.params.issueKey != "" {
 		return nil
+	}
+	if !cmdutil.IsInteractive() {
+		return cmdutil.ErrNonInteractive
 	}
 
 	var ans string

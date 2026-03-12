@@ -36,6 +36,7 @@ func NewCmdDelete() *cobra.Command {
 	}
 
 	cmd.Flags().Bool("cascade", false, "Delete issue along with its subtasks")
+	cmd.Flags().Bool("yes", false, "Confirm deletion without interactive prompt")
 
 	return &cmd
 }
@@ -52,6 +53,22 @@ func del(cmd *cobra.Command, args []string) {
 
 	cmdutil.ExitIfError(mc.setIssueKey(project))
 
+	if !params.yes {
+		if !cmdutil.IsInteractive() {
+			cmdutil.Failed("Use --yes flag to confirm deletion in non-interactive mode")
+		}
+		var confirm bool
+		prompt := &survey.Confirm{
+			Message: fmt.Sprintf("Are you sure you want to delete %q?", mc.params.key),
+		}
+		if err := survey.AskOne(prompt, &confirm); err != nil {
+			cmdutil.ExitIfError(err)
+		}
+		if !confirm {
+			cmdutil.Failed("Action aborted")
+		}
+	}
+
 	err := func() error {
 		s := cmdutil.Info(fmt.Sprintf("Removing issue %q", mc.params.key))
 		defer s.Stop()
@@ -66,6 +83,7 @@ func del(cmd *cobra.Command, args []string) {
 type deleteParams struct {
 	key     string
 	cascade bool
+	yes     bool
 	debug   bool
 }
 
@@ -80,12 +98,16 @@ func parseArgsAndFlags(flags query.FlagParser, args []string, project string) *d
 	cascade, err := flags.GetBool("cascade")
 	cmdutil.ExitIfError(err)
 
+	yes, err := flags.GetBool("yes")
+	cmdutil.ExitIfError(err)
+
 	debug, err := flags.GetBool("debug")
 	cmdutil.ExitIfError(err)
 
 	return &deleteParams{
 		key:     key,
 		cascade: cascade,
+		yes:     yes,
 		debug:   debug,
 	}
 }
@@ -99,6 +121,9 @@ type deleteCmd struct {
 func (mc *deleteCmd) setIssueKey(project string) error {
 	if mc.params.key != "" {
 		return nil
+	}
+	if !cmdutil.IsInteractive() {
+		return cmdutil.ErrNonInteractive
 	}
 
 	var ans string

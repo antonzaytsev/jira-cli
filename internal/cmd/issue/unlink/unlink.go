@@ -110,6 +110,9 @@ func (uc *unlinkCmd) setInwardIssueKey(project string) error {
 	if uc.params.inwardIssueKey != "" {
 		return nil
 	}
+	if !cmdutil.IsInteractive() {
+		return cmdutil.ErrNonInteractive
+	}
 
 	var ans string
 
@@ -129,6 +132,9 @@ func (uc *unlinkCmd) setInwardIssueKey(project string) error {
 func (uc *unlinkCmd) setOutwardIssueKey(project string) error {
 	if uc.params.outwardIssueKey != "" {
 		return nil
+	}
+	if !cmdutil.IsInteractive() {
+		return cmdutil.ErrNonInteractive
 	}
 
 	var ans string

@@ -1,28 +1,24 @@
-# Usage:
-#   $ docker build -t jira-cli:latest .
-#   $ docker run --rm -it -v ~/.netrc:/root/.netrc -v ~/.config/.jira:/root/.config/.jira jira-cli
+# Build:   docker build -t jira-cli .
+# Run:     docker run --rm jira-cli version
+# Extract: docker build --output=type=local,dest=./bin --target=export .
 
 FROM golang:1.25-alpine3.23 AS builder
 
+ARG TARGETOS
+ARG TARGETARCH
+
 ENV CGO_ENABLED=0
-ENV GOOS=linux
 
 WORKDIR /app
 
 COPY . .
 
-RUN set -eux; \
-    env ; \
-    ls -la ; \
-    apk add -U --no-cache make git ; \
-    make deps install
+RUN apk add -U --no-cache make git && make deps install
 
-FROM alpine:3.19
+FROM builder AS export
+RUN cp /go/bin/jira /jira
 
+FROM alpine:3.21
 RUN apk --no-cache add ca-certificates
-
-WORKDIR /root/
-
-COPY --from=builder /go/bin/jira /bin/jira
-
-ENTRYPOINT ["/bin/sh"]
+COPY --from=builder /go/bin/jira /usr/local/bin/jira
+ENTRYPOINT ["jira"]

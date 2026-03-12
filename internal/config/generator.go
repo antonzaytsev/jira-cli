@@ -148,6 +148,9 @@ func (c *JiraCLIConfigGenerator) Generate() (string, error) {
 		return Exists(cfgFile)
 	}()
 
+	if !c.usrCfg.Force && cfgExists && !cmdutil.IsInteractive() {
+		return "", fmt.Errorf("config already exists; use --force to overwrite in non-interactive mode")
+	}
 	if !c.usrCfg.Force && cfgExists && !shallOverwrite() {
 		return "", ErrSkip
 	}
@@ -205,6 +208,9 @@ func (c *JiraCLIConfigGenerator) configureInstallationType() error {
 	case strings.ToLower(jira.InstallationTypeLocal):
 		c.value.installation = jira.InstallationTypeLocal
 	default:
+		if !cmdutil.IsInteractive() {
+			return fmt.Errorf("installation type is required in non-interactive mode (use --installation flag)")
+		}
 		qs := &survey.Select{
 			Message: "Installation type:",
 			Help:    "Is this a cloud installation or an on-premise (local) installation.",
@@ -227,6 +233,9 @@ func (c *JiraCLIConfigGenerator) configureLocalAuthType() error {
 	authType := c.usrCfg.AuthType
 
 	if c.usrCfg.AuthType == "" {
+		if !cmdutil.IsInteractive() {
+			return fmt.Errorf("authentication type is required in non-interactive mode for local installation (use --auth-type flag)")
+		}
 		qs := &survey.Select{
 			Message: "Authentication type:",
 			Help: `Authentication type coud be: basic (login), bearer (PAT) or mtls (client certs)
@@ -277,6 +286,9 @@ func (c *JiraCLIConfigGenerator) configureMTLS() error {
 	getIfEmpty(c.value.mtls.clientKey, "clientkey", "Client Key", "Local path to your client key")
 
 	if len(qs) > 0 {
+		if !cmdutil.IsInteractive() {
+			return fmt.Errorf("mTLS certificates are required in non-interactive mode (use --ca-cert, --client-cert, --client-key flags)")
+		}
 		ans := struct {
 			CaCert     string
 			ClientCert string
@@ -391,6 +403,16 @@ func (c *JiraCLIConfigGenerator) configureServerAndLoginDetails() error {
 	}
 
 	if len(qs) > 0 {
+		if !cmdutil.IsInteractive() {
+			var missing []string
+			if c.usrCfg.Server == "" {
+				missing = append(missing, "--server")
+			}
+			if c.usrCfg.Login == "" {
+				missing = append(missing, "--login")
+			}
+			return fmt.Errorf("server/login details are required in non-interactive mode (use %s flag(s))", strings.Join(missing, ", "))
+		}
 		ans := struct {
 			Server string
 			Login  string
@@ -486,6 +508,9 @@ func (c *JiraCLIConfigGenerator) configureProjectAndBoardDetails() error {
 	}
 
 	if c.usrCfg.Project == "" {
+		if !cmdutil.IsInteractive() {
+			return fmt.Errorf("project is required in non-interactive mode (use --project flag)")
+		}
 		projectPrompt := survey.Select{
 			Message: "Default project:",
 			Help:    "This is your project key that you want to access by default when using the cli.",
@@ -507,6 +532,9 @@ func (c *JiraCLIConfigGenerator) configureProjectAndBoardDetails() error {
 	defaultBoardSuggestions := c.boardSuggestions
 
 	if c.usrCfg.Board == "" {
+		if !cmdutil.IsInteractive() {
+			return fmt.Errorf("board is required in non-interactive mode (use --board flag)")
+		}
 		for {
 			boardPrompt := &survey.Question{
 				Name: "",

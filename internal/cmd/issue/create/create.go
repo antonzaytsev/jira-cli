@@ -83,7 +83,7 @@ func create(cmd *cobra.Command, _ []string) {
 		params: params,
 	}
 
-	if cc.isNonInteractive() || cc.params.NoInput || tui.IsDumbTerminal() {
+	if cc.isNonInteractive() || cc.params.NoInput || !cmdutil.IsInteractive() || tui.IsDumbTerminal() {
 		cc.params.NoInput = true
 
 		if cc.isMandatoryParamsMissing() {
@@ -96,7 +96,7 @@ func create(cmd *cobra.Command, _ []string) {
 	cmdutil.ExitIfError(cc.setIssueTypes())
 	cmdutil.ExitIfError(cc.askQuestions())
 
-	if !params.NoInput {
+	if !params.NoInput && cmdutil.IsInteractive() {
 		err := cmdcommon.HandleNoInput(params)
 		cmdutil.ExitIfError(err)
 	}
