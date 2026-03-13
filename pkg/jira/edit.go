@@ -176,17 +176,19 @@ func getRequestDataForEdit(req *EditRequest) *editRequest {
 	}
 
 	var descBody interface{}
-	if s, ok := req.Body.(string); ok && s != "" {
-		descBody = &adf.ADF{
-			Version: 1,
-			DocType: "doc",
-			Content: []*adf.Node{{
-				NodeType: adf.NodeParagraph,
+	if s, ok := req.Body.(string); ok {
+		if s != "" {
+			descBody = &adf.ADF{
+				Version: 1,
+				DocType: "doc",
 				Content: []*adf.Node{{
-					NodeType:  adf.ChildNodeText,
-					NodeValue: adf.NodeValue{Text: s},
+					NodeType: adf.NodeParagraph,
+					Content: []*adf.Node{{
+						NodeType:  adf.ChildNodeText,
+						NodeValue: adf.NodeValue{Text: s},
+					}},
 				}},
-			}},
+			}
 		}
 	} else {
 		descBody = req.Body
