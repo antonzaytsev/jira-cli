@@ -163,6 +163,14 @@ func (*Client) getRequestData(req *CreateRequest, ver string) *createRequest {
 		Fields: createFieldsMarshaler{cf},
 	}
 
+	populateCreateOptionalFields(req, &data)
+	constructCustomFields(req.CustomFields, req.configuredCustomFields, &data)
+	constructCustomFieldsJSONForCreate(req.CustomFieldsJSON, &data)
+
+	return &data
+}
+
+func populateCreateOptionalFields(req *CreateRequest, data *createRequest) {
 	if req.ParentIssueKey != "" {
 		subtaskField := IssueTypeSubTask
 		if req.SubtaskField != "" {
@@ -237,11 +245,6 @@ func (*Client) getRequestData(req *CreateRequest, ver string) *createRequest {
 			OriginalEstimate string `json:"originalEstimate,omitempty"`
 		}{OriginalEstimate: req.OriginalEstimate}
 	}
-
-	constructCustomFields(req.CustomFields, req.configuredCustomFields, &data)
-	constructCustomFieldsJSONForCreate(req.CustomFieldsJSON, &data)
-
-	return &data
 }
 
 func constructCustomFields(fields map[string]string, configuredFields []IssueTypeField, data *createRequest) {

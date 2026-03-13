@@ -29,7 +29,7 @@ func (c *Client) AddAttachment(key, filePath string) ([]*Attachment, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to open file: %w", err)
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	var buf bytes.Buffer
 	writer := multipart.NewWriter(&buf)
@@ -42,7 +42,7 @@ func (c *Client) AddAttachment(key, filePath string) ([]*Attachment, error) {
 	if _, err := io.Copy(part, f); err != nil {
 		return nil, fmt.Errorf("failed to copy file: %w", err)
 	}
-	writer.Close()
+	_ = writer.Close()
 
 	path := fmt.Sprintf("/issue/%s/attachments", key)
 	res, err := c.PostMultipart(context.Background(), path, buf.Bytes(), Header{
