@@ -152,14 +152,14 @@ func edit(cmd *cobra.Command, args []string) {
 		}
 
 		edr := jira.EditRequest{
-			ParentIssueKey:  parent,
-			Summary:         params.summary,
-			Body:            editBody,
-			Priority:        params.priority,
-			Labels:          labels,
-			Components:      components,
-			FixVersions:     fixVersions,
-			AffectsVersions: affectsVersions,
+			ParentIssueKey:   parent,
+			Summary:          params.summary,
+			Body:             editBody,
+			Priority:         params.priority,
+			Labels:           labels,
+			Components:       components,
+			FixVersions:      fixVersions,
+			AffectsVersions:  affectsVersions,
 			CustomFields:     params.customFields,
 			CustomFieldsJSON: params.customFieldsJSON,
 			SkipNotify:       params.skipNotify,
@@ -306,21 +306,21 @@ func (ec *editCmd) askQuestions(issue *jira.Issue, originalBody string) error {
 }
 
 type editParams struct {
-	issueKey        string
-	parentIssueKey  string
-	summary         string
-	body            string
-	priority        string
-	assignee        string
-	labels          []string
-	components      []string
-	fixVersions     []string
-	affectsVersions []string
+	issueKey         string
+	parentIssueKey   string
+	summary          string
+	body             string
+	priority         string
+	assignee         string
+	labels           []string
+	components       []string
+	fixVersions      []string
+	affectsVersions  []string
 	customFields     map[string]string
 	customFieldsJSON map[string]json.RawMessage
 	skipNotify       bool
-	noInput         bool
-	debug           bool
+	noInput          bool
+	debug            bool
 }
 
 func parseArgsAndFlags(flags query.FlagParser, args []string, project string) *editParams {
@@ -375,21 +375,21 @@ func parseArgsAndFlags(flags query.FlagParser, args []string, project string) *e
 	cmdutil.ExitIfError(err)
 
 	return &editParams{
-		issueKey:        cmdutil.GetJiraIssueKey(project, args[0]),
-		parentIssueKey:  parentIssueKey,
-		summary:         summary,
-		body:            body,
-		priority:        priority,
-		assignee:        assignee,
-		labels:          labels,
-		components:      components,
-		fixVersions:     fixVersions,
-		affectsVersions: affectsVersions,
+		issueKey:         cmdutil.GetJiraIssueKey(project, args[0]),
+		parentIssueKey:   parentIssueKey,
+		summary:          summary,
+		body:             body,
+		priority:         priority,
+		assignee:         assignee,
+		labels:           labels,
+		components:       components,
+		fixVersions:      fixVersions,
+		affectsVersions:  affectsVersions,
 		customFields:     custom,
 		customFieldsJSON: customFieldsJSON,
 		skipNotify:       skipNotify,
-		noInput:         noInput,
-		debug:           debug,
+		noInput:          noInput,
+		debug:            debug,
 	}
 }
 

@@ -55,24 +55,24 @@ func listComments(cmd *cobra.Command, args []string) {
 	}
 
 	for _, c := range result.Comments {
-		fmt.Fprintf(os.Stdout, "# Comment %s by %s (%s)\n", c.ID, c.Author.DisplayName, cmdutil.FormatDateTimeHuman(c.Created, "2006-01-02T15:04:05.000-0700"))
+		_, _ = fmt.Fprintf(os.Stdout, "# Comment %s by %s (%s)\n", c.ID, c.Author.DisplayName, cmdutil.FormatDateTimeHuman(c.Created, "2006-01-02T15:04:05.000-0700"))
 
 		switch body := c.Body.(type) {
 		case string:
-			fmt.Fprintln(os.Stdout, body)
+			_, _ = fmt.Fprintln(os.Stdout, body)
 		default:
 			js, err := json.Marshal(body)
 			if err != nil {
-				fmt.Fprintln(os.Stdout, "[unable to render comment body]")
+				_, _ = fmt.Fprintln(os.Stdout, "[unable to render comment body]")
 				continue
 			}
 			var doc adf.ADF
 			if err := json.Unmarshal(js, &doc); err != nil {
-				fmt.Fprintln(os.Stdout, string(js))
+				_, _ = fmt.Fprintln(os.Stdout, string(js))
 				continue
 			}
 			md := adf.NewTranslator(&doc, adf.NewMarkdownTranslator()).Translate()
-			fmt.Fprintln(os.Stdout, md)
+			_, _ = fmt.Fprintln(os.Stdout, md)
 		}
 		fmt.Println()
 	}
