@@ -95,8 +95,10 @@ func edit(cmd *cobra.Command, args []string) {
 		getAnswers(params, issue)
 	}
 
-	// Use stdin only if nothing is passed to --body
-	if params.body == "" && cmdutil.StdinHasData() {
+	// Use stdin only if --no-input is not set and nothing is passed to --body.
+	// When --no-input is set, body must be provided via -b or --body-adf flags
+	// to avoid hanging on stdin from non-interactive callers (agents, scripts).
+	if params.body == "" && !params.noInput && cmdutil.StdinHasData() {
 		b, err := cmdutil.ReadFile("-")
 		if err != nil {
 			cmdutil.Failed("Error: %s", err)

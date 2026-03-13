@@ -127,7 +127,7 @@ func create(cmd *cobra.Command, _ []string) {
 			cr.WithCustomFields(configuredCustomFields)
 		}
 
-		resp, err := client.CreateV2(&cr)
+		resp, err := api.ProxyCreate(client, &cr)
 		if err != nil {
 			return "", err
 		}
@@ -163,7 +163,7 @@ func (cc *createCmd) getQuestions(projectType string) []*survey.Question {
 
 	var defaultBody string
 
-	if cc.params.Template != "" || cmdutil.StdinHasData() {
+	if cc.params.Template != "" || (!cc.params.NoInput && cmdutil.StdinHasData()) {
 		b, err := cmdutil.ReadFile(cc.params.Template)
 		if err != nil {
 			cmdutil.Failed("Error: %s", err)

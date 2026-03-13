@@ -137,7 +137,7 @@ func create(cmd *cobra.Command, _ []string) {
 			cr.SubtaskField = handle
 		}
 
-		return client.CreateV2(&cr)
+		return api.ProxyCreate(client, &cr)
 	}()
 
 	cmdutil.ExitIfError(err)
@@ -290,7 +290,7 @@ func (cc *createCmd) getRemainingQuestions() []*survey.Question {
 
 	var defaultBody string
 
-	if cc.params.Template != "" || cmdutil.StdinHasData() {
+	if cc.params.Template != "" || (!cc.params.NoInput && cmdutil.StdinHasData()) {
 		b, err := cmdutil.ReadFile(cc.params.Template)
 		if err != nil {
 			cmdutil.Failed("Error: %s", err)

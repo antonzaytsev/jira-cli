@@ -77,7 +77,7 @@ func (c *Client) CreateV2(req *CreateRequest) (*CreateResponse, error) {
 }
 
 func (c *Client) create(req *CreateRequest, ver string) (*CreateResponse, error) {
-	data := c.getRequestData(req)
+	data := c.getRequestData(req, ver)
 
 	body, err := json.Marshal(&data)
 	if err != nil {
@@ -117,7 +117,7 @@ func (c *Client) create(req *CreateRequest, ver string) (*CreateResponse, error)
 	return &out, err
 }
 
-func (*Client) getRequestData(req *CreateRequest) *createRequest {
+func (*Client) getRequestData(req *CreateRequest, ver string) *createRequest {
 	if req.Labels == nil {
 		req.Labels = []string{}
 	}
@@ -138,16 +138,20 @@ func (*Client) getRequestData(req *CreateRequest) *createRequest {
 	switch v := req.Body.(type) {
 	case string:
 		if v != "" {
-			cf.Description = &adf.ADF{
-				Version: 1,
-				DocType: "doc",
-				Content: []*adf.Node{{
-					NodeType: adf.NodeParagraph,
+			if ver == apiVersion3 {
+				cf.Description = &adf.ADF{
+					Version: 1,
+					DocType: "doc",
 					Content: []*adf.Node{{
-						NodeType:  adf.ChildNodeText,
-						NodeValue: adf.NodeValue{Text: v},
+						NodeType: adf.NodeParagraph,
+						Content: []*adf.Node{{
+							NodeType:  adf.ChildNodeText,
+							NodeValue: adf.NodeValue{Text: v},
+						}},
 					}},
-				}},
+				}
+			} else {
+				cf.Description = v
 			}
 		}
 	case *adf.ADF:
