@@ -392,7 +392,7 @@ func TestGetIssueLinkTypes(t *testing.T) {
 	var unexpectedStatusCode bool
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "/rest/api/2/issueLinkType", r.URL.Path)
+		assert.Equal(t, "/rest/api/3/issueLinkType", r.URL.Path)
 
 		if unexpectedStatusCode {
 			w.WriteHeader(400)
@@ -442,7 +442,7 @@ func TestLinkIssue(t *testing.T) {
 	var unexpectedStatusCode bool
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "/rest/api/2/issueLink", r.URL.Path)
+		assert.Equal(t, "/rest/api/3/issueLink", r.URL.Path)
 		assert.Equal(t, "application/json", r.Header.Get("Accept"))
 		assert.Equal(t, "application/json", r.Header.Get("Content-Type"))
 
@@ -469,7 +469,7 @@ func TestUnlinkIssue(t *testing.T) {
 	var unexpectedStatusCode bool
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "/rest/api/2/issueLink/123", r.URL.Path)
+		assert.Equal(t, "/rest/api/3/issueLink/123", r.URL.Path)
 		assert.Equal(t, http.MethodDelete, r.Method)
 		assert.Equal(t, "application/json", r.Header.Get("Accept"))
 		assert.Equal(t, "application/json", r.Header.Get("Content-Type"))
@@ -524,14 +524,14 @@ func TestAddIssueComment(t *testing.T) {
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, "POST", r.Method)
-		assert.Equal(t, "/rest/api/2/issue/TEST-1/comment", r.URL.Path)
+		assert.Equal(t, "/rest/api/3/issue/TEST-1/comment", r.URL.Path)
 		assert.Equal(t, "application/json", r.Header.Get("Accept"))
 		assert.Equal(t, "application/json", r.Header.Get("Content-Type"))
 
 		actualBody := new(strings.Builder)
 		_, _ = io.Copy(actualBody, r.Body)
 
-		expectedBody := `{"body":"comment","properties":[{"key":"sd.public.comment","value":{"internal":false}}]}`
+		expectedBody := `{"body":{"version":1,"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"comment"}]}]},"properties":[{"key":"sd.public.comment","value":{"internal":false}}]}`
 
 		assert.Equal(t, expectedBody, actualBody.String())
 
@@ -559,7 +559,7 @@ func TestAddIssueWorklog(t *testing.T) {
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, "POST", r.Method)
-		assert.Equal(t, "/rest/api/2/issue/TEST-1/worklog", r.URL.Path)
+		assert.Equal(t, "/rest/api/3/issue/TEST-1/worklog", r.URL.Path)
 		assert.Equal(t, "application/json", r.Header.Get("Accept"))
 		assert.Equal(t, "application/json", r.Header.Get("Content-Type"))
 
@@ -612,7 +612,7 @@ func TestGetField(t *testing.T) {
 	var unexpectedStatusCode bool
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "/rest/api/2/field", r.URL.Path)
+		assert.Equal(t, "/rest/api/3/field", r.URL.Path)
 
 		if unexpectedStatusCode {
 			w.WriteHeader(400)
@@ -684,7 +684,7 @@ func TestRemoteLinkIssue(t *testing.T) {
 	var unexpectedStatusCode bool
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "/rest/api/2/issue/TEST-1/remotelink", r.URL.Path)
+		assert.Equal(t, "/rest/api/3/issue/TEST-1/remotelink", r.URL.Path)
 		assert.Equal(t, http.MethodPost, r.Method)
 		assert.Equal(t, "application/json", r.Header.Get("Accept"))
 		assert.Equal(t, "application/json", r.Header.Get("Content-Type"))
