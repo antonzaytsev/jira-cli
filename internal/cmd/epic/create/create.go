@@ -127,7 +127,7 @@ func create(cmd *cobra.Command, _ []string) {
 			cr.WithCustomFields(configuredCustomFields)
 		}
 
-		resp, err := client.CreateV2(&cr)
+		resp, err := api.ProxyCreate(client, &cr)
 		if err != nil {
 			return "", err
 		}

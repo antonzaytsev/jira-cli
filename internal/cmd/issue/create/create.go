@@ -154,7 +154,7 @@ func create(cmd *cobra.Command, _ []string) {
 			cr.SubtaskField = handle
 		}
 
-		return client.CreateV2(&cr)
+		return api.ProxyCreate(client, &cr)
 	}()
 
 	cmdutil.ExitIfError(err)

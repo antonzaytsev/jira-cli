@@ -202,11 +202,13 @@ func bulkEdit(cmd *cobra.Command, _ []string) {
 
 		edr := jira.EditRequest{
 			Summary:      item.Summary,
-			Body:         item.Body,
 			Priority:     item.Priority,
 			Labels:       item.Labels,
 			Components:   item.Components,
 			CustomFields: item.Custom,
+		}
+		if item.Body != "" {
+			edr.Body = item.Body
 		}
 
 		if err := client.Edit(item.Key, &edr); err != nil {

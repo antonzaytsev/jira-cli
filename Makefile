@@ -1,4 +1,4 @@
-.PHONY: all deps build install lint test ci docker.build docker.run docker.lint docker.test docker.ci jira.server clean distclean
+.PHONY: all build install lint test ci docker.build docker.run docker.lint docker.test docker.ci jira.server release release.publish clean
 
 ##############
 # Build vars #
@@ -30,33 +30,31 @@ export LDFLAGS += -w
 export CGO_ENABLED ?= 0
 export GOCACHE ?= $(CURDIR)/.gocache
 
+DOCKER_GOLANG_IMAGE       ?= golang:1.25-alpine3.23
+DOCKER_GOLANG_IMAGE_TEST  ?= golang:1.25
+DOCKER_LINT_IMAGE         ?= golangci/golangci-lint:v2.6.2-alpine
+DOCKER_RUN_DEV  = docker run --rm -v $(CURDIR):/app -w /app -e CGO_ENABLED -e GOCACHE=/app/.gocache $(DOCKER_GOLANG_IMAGE)
+DOCKER_RUN_TEST = docker run --rm -v $(CURDIR):/app -w /app -e GOCACHE=/app/.gocache $(DOCKER_GOLANG_IMAGE_TEST)
+
 all: build
 
-deps:
-	go mod vendor -v
-
-build: deps
-	go build -ldflags='$(LDFLAGS)' ./...
+build:
+	$(DOCKER_RUN_DEV) sh -c "go mod vendor -v && go build -ldflags='$(LDFLAGS)' ./..."
 
 install:
 	go install -ldflags='$(LDFLAGS)' ./...
 
 lint:
-	@if ! command -v golangci-lint > /dev/null 2>&1; then \
-		curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | \
-		sh -s -- -b "$$(go env GOPATH)/bin" v2.6.2 ; \
-	fi
-	golangci-lint run ./...
+	docker run --rm -v $(CURDIR):/app -w /app $(DOCKER_LINT_IMAGE) golangci-lint run ./...
 
 test:
-	@go clean -testcache
-	CGO_ENABLED=1 go test -race ./...
+	$(DOCKER_RUN_TEST) sh -c "CGO_ENABLED=1 go test -race ./..."
 
 ci: lint test
 
-################
-# Docker build #
-################
+docker.lint: lint
+docker.test: test
+docker.ci: ci
 
 docker.build:
 	docker build -t jira-cli:latest .
@@ -64,22 +62,25 @@ docker.build:
 docker.run:
 	docker run --rm jira-cli:latest $(ARGS)
 
-DOCKER_GOLANG_IMAGE ?= golang:1.25-alpine3.23
-DOCKER_RUN_DEV = docker run --rm -v $(CURDIR):/app -w /app -e CGO_ENABLED -e GOCACHE=/app/.gocache $(DOCKER_GOLANG_IMAGE)
-
-docker.lint:
-	docker run --rm -v $(CURDIR):/app -w /app golangci/golangci-lint:v2.6.2-alpine golangci-lint run ./...
-
-docker.test:
-	$(DOCKER_RUN_DEV) sh -c "apk add -U --no-cache build-base && CGO_ENABLED=1 go test -race ./..."
-
-docker.ci: docker.lint docker.test
-
 jira.server:
 	docker compose up -d
 
-clean:
-	go clean -x ./...
+###########
+# Release #
+###########
 
-distclean:
-	go clean -x -cache -testcache -modcache ./...
+RELEASE_VERSION ?= $(error RELEASE_VERSION is required — run: make release RELEASE_VERSION=vX.Y.Z)
+
+release: ci
+	@test -z "$$(git status --porcelain)" || { echo "ERROR: working tree is dirty"; exit 1; }
+	@test "$$(git branch --show-current)" = "main" || { echo "ERROR: must be on main branch"; exit 1; }
+	git tag -a $(RELEASE_VERSION) -m "Release $(RELEASE_VERSION)"
+	git push origin $(RELEASE_VERSION)
+	@echo "Tag $(RELEASE_VERSION) pushed — GitHub Actions release workflow triggered."
+
+release.publish:
+	gh release edit $(RELEASE_VERSION) --draft=false
+	@echo "Release $(RELEASE_VERSION) published."
+
+clean:
+	$(DOCKER_RUN_DEV) go clean -x ./...
