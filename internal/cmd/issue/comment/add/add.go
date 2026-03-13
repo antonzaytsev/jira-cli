@@ -207,7 +207,7 @@ func (ac *addCmd) getQuestions() []*survey.Question {
 		defaultBody string
 	)
 
-	if ac.params.template != "" || cmdutil.StdinHasData() {
+	if ac.params.template != "" {
 		b, err := cmdutil.ReadFile(ac.params.template)
 		if err != nil {
 			cmdutil.Failed("Error: %s", err)
@@ -253,7 +253,7 @@ func getNextAction() *survey.Question {
 }
 
 func (ac *addCmd) isNonInteractive() bool {
-	return cmdutil.StdinHasData() || ac.params.template == "-"
+	return ac.params.template == "-"
 }
 
 func (ac *addCmd) isMandatoryParamsMissing() bool {

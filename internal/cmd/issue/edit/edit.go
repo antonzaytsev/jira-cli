@@ -95,14 +95,6 @@ func edit(cmd *cobra.Command, args []string) {
 		getAnswers(params, issue)
 	}
 
-	// Use stdin only if nothing is passed to --body
-	if params.body == "" && cmdutil.StdinHasData() {
-		b, err := cmdutil.ReadFile("-")
-		if err != nil {
-			cmdutil.Failed("Error: %s", err)
-		}
-		params.body = string(b)
-	}
 	// Keep body as is if there were no changes.
 	if params.body != "" && params.body == originalBody {
 		params.body = ""

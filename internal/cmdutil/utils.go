@@ -12,7 +12,6 @@ import (
 	"github.com/fatih/color"
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
-	"golang.org/x/term"
 
 	"github.com/ankitpokhrel/jira-cli/pkg/browser"
 	"github.com/ankitpokhrel/jira-cli/pkg/jira"
@@ -138,20 +137,16 @@ func IsInteractive() bool {
 // ErrNonInteractive is returned when a command needs user input but is running non-interactively.
 var ErrNonInteractive = fmt.Errorf("this operation requires interactive mode (use --interactive flag) or provide all required flags")
 
-// StdinHasData checks if standard input has any data to be processed.
-func StdinHasData() bool {
-	return !term.IsTerminal(int(os.Stdin.Fd()))
-}
-
 // ReadFile reads contents of the given file.
+// Pass "-" to read from standard input explicitly.
 func ReadFile(filePath string) ([]byte, error) {
-	if filePath != "-" && filePath != "" {
-		return os.ReadFile(filePath)
-	}
-	if filePath == "-" || StdinHasData() {
+	if filePath == "-" {
 		b, err := io.ReadAll(os.Stdin)
 		_ = os.Stdin.Close()
 		return b, err
+	}
+	if filePath != "" {
+		return os.ReadFile(filePath)
 	}
 	return []byte(""), nil
 }

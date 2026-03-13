@@ -163,7 +163,7 @@ func (cc *createCmd) getQuestions(projectType string) []*survey.Question {
 
 	var defaultBody string
 
-	if cc.params.Template != "" || cmdutil.StdinHasData() {
+	if cc.params.Template != "" {
 		b, err := cmdutil.ReadFile(cc.params.Template)
 		if err != nil {
 			cmdutil.Failed("Error: %s", err)
@@ -202,7 +202,7 @@ type createCmd struct {
 }
 
 func (cc *createCmd) isNonInteractive() bool {
-	return cmdutil.StdinHasData() || cc.params.Template == "-"
+	return cc.params.Template == "-"
 }
 
 func (cc *createCmd) isMandatoryParamsMissing() bool {
