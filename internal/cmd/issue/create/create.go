@@ -12,6 +12,7 @@ import (
 	"github.com/ankitpokhrel/jira-cli/internal/cmdcommon"
 	"github.com/ankitpokhrel/jira-cli/internal/cmdutil"
 	"github.com/ankitpokhrel/jira-cli/internal/query"
+	"github.com/ankitpokhrel/jira-cli/pkg/adf"
 	"github.com/ankitpokhrel/jira-cli/pkg/jira"
 	"github.com/ankitpokhrel/jira-cli/pkg/surveyext"
 	"github.com/ankitpokhrel/jira-cli/pkg/tui"
@@ -42,6 +43,9 @@ $ jira issue create --raw
 
 # Or, use pipe to read input directly from standard input
 $ echo "Description from stdin" | jira issue create -s"Summary" -tTask
+
+# Create issue with rich ADF description
+$ jira issue create -tTask -sSummary --body-adf '{"version":1,"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Rich description"}]}]}'
 
 # For issue description, the flag --body/-b takes precedence over the --template flag
 # The example below will add "Body from flag" as an issue description
@@ -104,16 +108,29 @@ func create(cmd *cobra.Command, _ []string) {
 	params.Reporter = cmdcommon.GetRelevantUser(client, project, params.Reporter)
 	params.Assignee = cmdcommon.GetRelevantUser(client, project, params.Assignee)
 
+	bodyADF, _ := cmd.Flags().GetString("body-adf")
+
 	issue, err := func() (*jira.CreateResponse, error) {
 		s := cmdutil.Info("Creating an issue...")
 		defer s.Stop()
+
+		var body interface{}
+		if bodyADF != "" {
+			var adfDoc adf.ADF
+			if err := json.Unmarshal([]byte(bodyADF), &adfDoc); err != nil {
+				cmdutil.Failed("Error: invalid ADF JSON: %s", err)
+			}
+			body = &adfDoc
+		} else {
+			body = params.Body
+		}
 
 		cr := jira.CreateRequest{
 			Project:          project,
 			IssueType:        params.IssueType,
 			ParentIssueKey:   params.ParentIssueKey,
 			Summary:          params.Summary,
-			Body:             params.Body,
+			Body:             body,
 			Reporter:         params.Reporter,
 			Assignee:         params.Assignee,
 			Priority:         params.Priority,

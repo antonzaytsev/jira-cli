@@ -10,8 +10,10 @@ import (
 	"golang.org/x/term"
 
 	"github.com/ankitpokhrel/jira-cli/internal/cmd/board"
+	"github.com/ankitpokhrel/jira-cli/internal/cmd/bulk"
 	"github.com/ankitpokhrel/jira-cli/internal/cmd/completion"
 	"github.com/ankitpokhrel/jira-cli/internal/cmd/epic"
+	"github.com/ankitpokhrel/jira-cli/internal/cmd/field"
 	initCmd "github.com/ankitpokhrel/jira-cli/internal/cmd/init"
 	"github.com/ankitpokhrel/jira-cli/internal/cmd/issue"
 	"github.com/ankitpokhrel/jira-cli/internal/cmd/man"
@@ -22,6 +24,7 @@ import (
 	"github.com/ankitpokhrel/jira-cli/internal/cmd/serverinfo"
 	"github.com/ankitpokhrel/jira-cli/internal/cmd/sprint"
 	"github.com/ankitpokhrel/jira-cli/internal/cmd/version"
+	"github.com/ankitpokhrel/jira-cli/internal/cmd/webhook"
 	"github.com/ankitpokhrel/jira-cli/internal/cmdutil"
 	jiraConfig "github.com/ankitpokhrel/jira-cli/internal/config"
 	"github.com/ankitpokhrel/jira-cli/pkg/jira"
@@ -151,6 +154,9 @@ func addChildCommands(cmd *cobra.Command) {
 		version.NewCmdVersion(),
 		release.NewCmdRelease(),
 		man.NewCmdMan(),
+		bulk.NewCmdBulk(),
+		field.NewCmdField(),
+		webhook.NewCmdWebhook(),
 	)
 }
 

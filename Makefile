@@ -1,4 +1,4 @@
-.PHONY: all deps build install lint test ci docker.build docker.run jira.server clean distclean
+.PHONY: all deps build install lint test ci docker.build docker.run docker.lint docker.test docker.ci jira.server clean distclean
 
 ##############
 # Build vars #
@@ -63,6 +63,17 @@ docker.build:
 
 docker.run:
 	docker run --rm jira-cli:latest $(ARGS)
+
+DOCKER_GOLANG_IMAGE ?= golang:1.25-alpine3.23
+DOCKER_RUN_DEV = docker run --rm -v $(CURDIR):/app -w /app -e CGO_ENABLED -e GOCACHE=/app/.gocache $(DOCKER_GOLANG_IMAGE)
+
+docker.lint:
+	docker run --rm -v $(CURDIR):/app -w /app golangci/golangci-lint:v2.6.2-alpine golangci-lint run ./...
+
+docker.test:
+	$(DOCKER_RUN_DEV) sh -c "apk add -U --no-cache build-base && CGO_ENABLED=1 go test -race ./..."
+
+docker.ci: docker.lint docker.test
 
 jira.server:
 	docker compose up -d
