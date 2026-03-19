@@ -13,10 +13,10 @@ WORKDIR /app
 
 COPY . .
 
-RUN apk add -U --no-cache make git && make deps install
+RUN apk add -U --no-cache make git && go mod vendor && make install
 
-FROM builder AS export
-RUN cp /go/bin/jira /jira
+FROM scratch AS export
+COPY --from=builder /go/bin/jira /jira
 
 FROM alpine:3.21
 RUN apk --no-cache add ca-certificates
