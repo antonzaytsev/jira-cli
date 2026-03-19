@@ -5,6 +5,7 @@ import (
 
 	attachadd "github.com/ankitpokhrel/jira-cli/internal/cmd/issue/attach/add"
 	attachdelete "github.com/ankitpokhrel/jira-cli/internal/cmd/issue/attach/delete"
+	attachlist "github.com/ankitpokhrel/jira-cli/internal/cmd/issue/attach/list"
 )
 
 const helpText = `Attach command helps you manage issue attachments. See available commands below.`
@@ -24,6 +25,7 @@ func NewCmdAttach() *cobra.Command {
 	cmd.AddCommand(
 		attachadd.NewCmdAttachAdd(),
 		attachdelete.NewCmdAttachDelete(),
+		attachlist.NewCmdAttachList(),
 	)
 
 	return &cmd

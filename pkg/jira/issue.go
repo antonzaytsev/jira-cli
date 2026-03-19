@@ -643,3 +643,145 @@ func (c *Client) watchIssue(key, watcher, ver string) error {
 	}
 	return nil
 }
+
+// WatchersResult holds the response from GET /issue/{key}/watchers.
+type WatchersResult struct {
+	IsWatching bool    `json:"isWatching"`
+	WatchCount int     `json:"watchCount"`
+	Watchers   []*User `json:"watchers"`
+}
+
+// GetIssueWatchers fetches watchers for an issue using GET /issue/{key}/watchers endpoint.
+func (c *Client) GetIssueWatchers(key string) (*WatchersResult, error) {
+	path := fmt.Sprintf("/issue/%s/watchers", key)
+	res, err := c.Get(context.Background(), path, nil)
+	if err != nil {
+		return nil, err
+	}
+	if res == nil {
+		return nil, ErrEmptyResponse
+	}
+	defer func() { _ = res.Body.Close() }()
+
+	if res.StatusCode != http.StatusOK {
+		return nil, formatUnexpectedResponse(res)
+	}
+
+	var out WatchersResult
+	if err := json.NewDecoder(res.Body).Decode(&out); err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// RemoveIssueWatcher removes a user from issue watchers using DELETE /issue/{key}/watchers endpoint.
+func (c *Client) RemoveIssueWatcher(key, accountID string) error {
+	path := fmt.Sprintf("/issue/%s/watchers?accountId=%s", key, accountID)
+	res, err := c.Delete(context.Background(), path, Header{
+		"Accept": "application/json",
+	})
+	if err != nil {
+		return err
+	}
+	if res == nil {
+		return ErrEmptyResponse
+	}
+	defer func() { _ = res.Body.Close() }()
+
+	if res.StatusCode != http.StatusNoContent {
+		return formatUnexpectedResponse(res)
+	}
+	return nil
+}
+
+// WorklogResult holds the response from listing worklogs.
+type WorklogResult struct {
+	StartAt    int            `json:"startAt"`
+	MaxResults int            `json:"maxResults"`
+	Total      int            `json:"total"`
+	Worklogs   []*WorklogItem `json:"worklogs"`
+}
+
+// WorklogItem represents a single worklog entry.
+type WorklogItem struct {
+	ID               string `json:"id"`
+	Author           User   `json:"author"`
+	Comment          string `json:"comment"`
+	Started          string `json:"started"`
+	TimeSpent        string `json:"timeSpent"`
+	TimeSpentSeconds int    `json:"timeSpentSeconds"`
+	Created          string `json:"created"`
+	Updated          string `json:"updated"`
+}
+
+// GetIssueWorklog fetches worklogs for an issue using GET /issue/{key}/worklog endpoint.
+func (c *Client) GetIssueWorklog(key string) (*WorklogResult, error) {
+	path := fmt.Sprintf("/issue/%s/worklog", key)
+	res, err := c.Get(context.Background(), path, Header{
+		"Accept": "application/json",
+	})
+	if err != nil {
+		return nil, err
+	}
+	if res == nil {
+		return nil, ErrEmptyResponse
+	}
+	defer func() { _ = res.Body.Close() }()
+
+	if res.StatusCode != http.StatusOK {
+		return nil, formatUnexpectedResponse(res)
+	}
+
+	var out WorklogResult
+	if err := json.NewDecoder(res.Body).Decode(&out); err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// ChangelogResult holds the response from issue changelog endpoint.
+type ChangelogResult struct {
+	StartAt    int              `json:"startAt"`
+	MaxResults int              `json:"maxResults"`
+	Total      int              `json:"total"`
+	Histories  []*ChangeHistory `json:"values"`
+}
+
+// ChangeHistory represents a single changelog entry.
+type ChangeHistory struct {
+	ID      string        `json:"id"`
+	Author  User          `json:"author"`
+	Created string        `json:"created"`
+	Items   []*ChangeItem `json:"items"`
+}
+
+// ChangeItem represents a single field change within a changelog entry.
+type ChangeItem struct {
+	Field      string `json:"field"`
+	FieldType  string `json:"fieldtype"`
+	FromString string `json:"fromString"`
+	ToString   string `json:"toString"`
+}
+
+// GetIssueChangelog fetches the changelog for an issue using GET /issue/{key}/changelog endpoint.
+func (c *Client) GetIssueChangelog(key string) (*ChangelogResult, error) {
+	path := fmt.Sprintf("/issue/%s/changelog", key)
+	res, err := c.Get(context.Background(), path, nil)
+	if err != nil {
+		return nil, err
+	}
+	if res == nil {
+		return nil, ErrEmptyResponse
+	}
+	defer func() { _ = res.Body.Close() }()
+
+	if res.StatusCode != http.StatusOK {
+		return nil, formatUnexpectedResponse(res)
+	}
+
+	var out ChangelogResult
+	if err := json.NewDecoder(res.Body).Decode(&out); err != nil {
+		return nil, err
+	}
+	return &out, nil
+}

@@ -72,6 +72,31 @@ func (c *Client) AddAttachment(key, filePath string) ([]*Attachment, error) {
 	return out, nil
 }
 
+// GetAttachment fetches attachment metadata using GET /attachment/{id} endpoint.
+func (c *Client) GetAttachment(attachmentID string) (*Attachment, error) {
+	path := fmt.Sprintf("/attachment/%s", attachmentID)
+	res, err := c.Get(context.Background(), path, Header{
+		"Accept": "application/json",
+	})
+	if err != nil {
+		return nil, err
+	}
+	if res == nil {
+		return nil, ErrEmptyResponse
+	}
+	defer func() { _ = res.Body.Close() }()
+
+	if res.StatusCode != http.StatusOK {
+		return nil, formatUnexpectedResponse(res)
+	}
+
+	var out Attachment
+	if err := json.NewDecoder(res.Body).Decode(&out); err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
 // DeleteAttachment deletes an attachment using DELETE /attachment/{id} endpoint.
 func (c *Client) DeleteAttachment(attachmentID string) error {
 	path := fmt.Sprintf("/attachment/%s", attachmentID)

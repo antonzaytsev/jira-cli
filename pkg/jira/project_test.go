@@ -3,71 +3,41 @@ package jira
 import (
 	"net/http"
 	"net/http/httptest"
-	"net/url"
-	"os"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func TestProjects(t *testing.T) {
+func TestGetProjectComponents(t *testing.T) {
 	var unexpectedStatusCode bool
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "/rest/api/2/project", r.URL.Path)
-
-		qs := r.URL.Query()
+		assert.Equal(t, "/rest/api/3/project/TEST/components", r.URL.Path)
 
 		if unexpectedStatusCode {
 			w.WriteHeader(400)
 		} else {
-			assert.Equal(t, url.Values{
-				"expand": []string{"lead"},
-			}, qs)
-
-			resp, err := os.ReadFile("./testdata/projects.json")
-			assert.NoError(t, err)
-
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(200)
-			_, _ = w.Write(resp)
+			_, _ = w.Write([]byte(`[
+				{"id": "10000", "name": "Backend", "description": "Backend services"},
+				{"id": "10001", "name": "Frontend", "description": "Frontend app"}
+			]`))
 		}
 	}))
 	defer server.Close()
 
 	client := NewClient(Config{Server: server.URL}, WithTimeout(3*time.Second))
 
-	actual, err := client.Project()
+	actual, err := client.GetProjectComponents("TEST")
 	assert.NoError(t, err)
-
-	expected := []*Project{
-		{
-			Key:  "PRJ1",
-			Name: "Project 1",
-			Lead: struct {
-				Name string `json:"displayName"`
-			}{Name: "Person A"},
-		},
-		{
-			Key:  "PRJ2",
-			Name: "Project 2",
-			Lead: struct {
-				Name string `json:"displayName"`
-			}{Name: "Person B"},
-		},
-		{
-			Key:  "PRJ3",
-			Name: "Project 3",
-			Lead: struct {
-				Name string `json:"displayName"`
-			}{Name: "Person C"},
-		},
-	}
-	assert.Equal(t, expected, actual)
+	assert.Len(t, actual, 2)
+	assert.Equal(t, "Backend", actual[0].Name)
+	assert.Equal(t, "10000", actual[0].ID)
+	assert.Equal(t, "Frontend", actual[1].Name)
 
 	unexpectedStatusCode = true
-
-	_, err = client.Project()
-	assert.Error(t, &ErrUnexpectedResponse{}, err)
+	_, err = client.GetProjectComponents("TEST")
+	assert.Error(t, err)
 }

@@ -276,3 +276,42 @@ func reverse(s []*Sprint) {
 		s[i], s[j] = s[j], s[i]
 	}
 }
+
+// CreateSprintRequest holds the request data for creating a sprint.
+type CreateSprintRequest struct {
+	Name      string `json:"name"`
+	Goal      string `json:"goal,omitempty"`
+	StartDate string `json:"startDate,omitempty"`
+	EndDate   string `json:"endDate,omitempty"`
+	BoardID   int    `json:"originBoardId"`
+}
+
+// CreateSprint creates a new sprint using POST /sprint endpoint.
+func (c *Client) CreateSprint(req *CreateSprintRequest) (*Sprint, error) {
+	body, err := json.Marshal(req)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := c.PostV1(context.Background(), "/sprint", body, Header{
+		"Accept":       "application/json",
+		"Content-Type": "application/json",
+	})
+	if err != nil {
+		return nil, err
+	}
+	if res == nil {
+		return nil, ErrEmptyResponse
+	}
+	defer func() { _ = res.Body.Close() }()
+
+	if res.StatusCode != http.StatusCreated {
+		return nil, formatUnexpectedResponse(res)
+	}
+
+	var out Sprint
+	if err := json.NewDecoder(res.Body).Decode(&out); err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
